@@ -1,58 +1,175 @@
-# 🎯 Dill: AI-Powered Presentation Generator
+# Dill 🥒
 
-**Dill** is a full-stack web application that lets you quickly create professional presentations from PDF documents using **AI** 🤖. It combines a robust backend with an interactive, user-friendly frontend for a modern, data-driven experience 🚀.
-
----
-
-## ✨ Key Features
-
-- **🔒 Secure Authentication**  
-  Log in safely using your Google account via Supabase Auth.
-
-- **🧠 AI-Powered Slide Generation**  
-  Analyze your PDFs and generate a specified number of slides using the Claude AI model via the Anthropic API.
-
-- **🗄️ Private File Storage**  
-  Uploaded files and generated slide data are securely stored in a private Supabase Storage bucket—accessible only to you.
-
-- **📊 Intuitive Dashboard**  
-  Manage your presentations easily with options to download or delete generated slides.
-
-- **🎨 Customizable Output**  
-  Specify the number of slides for a tailored presentation experience.
+Dill is a developer-first framework for turning messy documents into **polished, editable Google Slides decks**.
+It uses **Anthropic Claude** to generate structured JSON slide specs, then applies them to Google Slides with a clean UI, modern themes, and even **voice commands** for editing.
 
 ---
 
-## 🛠️ Technology Stack
+## ✨ Features
 
-### Monorepo Structure
-The project is organized as a monorepo containing:
+* **PDF → Slides**
+  Upload any PDF, and Dill parses + summarizes into a structured deck.
 
-- **Backend**: Next.js  
-- **Frontend**: Vite + React
+* **Claude-powered generation**
+  Uses large-context LLMs to design slide layouts, typography, and themes.
+
+* **JSON preview + editing**
+  Inspect and tweak the full slide spec before sending to Google Slides.
+
+* **Google Slides export**
+  One click to create a fully editable Google Slides deck with layout, text, and styles.
+
+* **Modern theming system**
+  Built-in color palettes (`forest`, `ocean`, `emerald`, etc.), or define custom hex values.
+
+* **Voice editing** 🎤
+  Natural commands like:
+
+  * “Change the title of slide 2 to Puppies”
+  * “Switch background to red”
+  * “Make the word ATP bold in body”
+  * “Move slide 5 before slide 2”
+    Fuzzy matching + Claude fallback ensures commands are applied even if phrased loosely.
+
+* **Undo history**
+  Every voice action is reversible.
 
 ---
 
-### Backend (Next.js)
-- **⚡ Framework**: Next.js v14.2.5  
-- **🗃️ Database & Authentication**: Supabase for DB, auth, and file storage  
-- **🤖 AI Integration**: `@anthropic-ai/sdk` to communicate with Claude AI  
-- **📄 File Handling**: API routes for PDF uploads and AI service communication  
+## 🚀 Getting Started
 
-### Frontend (Vite + React)
-- **⚡ Framework**: Vite + React for fast development  
-- **🖌️ UI Components**: shadcn/ui for accessible and customizable components  
-- **🎨 Styling**: Tailwind CSS for responsive design  
-- **🔗 Routing**: react-router-dom for smooth navigation  
+### 1. Clone and install
+
+```bash
+git clone https://github.com/yourname/dill.git
+cd dill
+npm install
+```
+
+### 2. Set environment variables
+
+Create a `.env.local` file:
+
+```bash
+# Anthropic API (for Claude models)
+ANTHROPIC_API_KEY=sk-...
+
+# Optional: override model choice
+ANTHROPIC_MODEL=claude-3-5-sonnet-latest
+
+# Google OAuth credentials
+GOOGLE_CLIENT_ID=...
+GOOGLE_CLIENT_SECRET=...
+NEXTAUTH_URL=http://localhost:3000
+```
+
+### 3. Run
+
+```bash
+npm run dev
+```
+
+Visit [http://localhost:3000](http://localhost:3000).
 
 ---
-## Overall Purpose
 
-The application is designed to take a PDF file from a user, process it using an AI, and generate a set of presentation slides based on the content. This is a powerful tool for quickly summarizing and creating professional-looking slide decks for educational or business purposes.
+## 🧩 Architecture
 
-## Setup
+* **Frontend**:
+  Next.js + TailwindCSS + ShadCN UI.
+  Components:
 
-1. **Create project**
-   ```bash
-   npx create-next-app@latest supa-pdfs --typescript --eslint
-   cd supa-pdfs
+  * `SlidesPreview` – live slide deck rendering.
+  * `VoiceCommander` – speech recognition + fuzzy/Claude intent mapping.
+  * `MessyDataAgent` – agent UI for cleaning raw content.
+
+* **Backend**:
+
+  * `lib/pdf-slides.ts`:
+
+    * PDF parsing (`pdf-parse`)
+    * Claude prompt for JSON slide generation
+    * Robust JSON sanitization/repair
+  * `lib/voice/interpret.ts`:
+
+    * Structured intent parsing via Claude
+
+* **Google Slides Integration**:
+  Batched `presentations.batchUpdate` requests to create slides, apply text, styles, and theme.
+
+---
+
+## 🗣️ Voice Commands
+
+Here are supported categories:
+
+* **Navigation**
+
+  * “Go to slide 3”
+  * “Duplicate slide 2”
+  * “Swap slide 1 with slide 4”
+
+* **Content edits**
+
+  * “Change title of slide 5 to Final Results”
+  * “Add bullet to slide 2: Market growth”
+  * “Replace bullets with: A; B; C”
+
+* **Formatting**
+
+  * “Align body center”
+  * “Title size 36”
+  * “Make ‘revenue’ bold in body”
+
+* **Theme**
+
+  * “Set theme to forest”
+  * “Switch background to #0B1B2B”
+  * “Set text color to white”
+
+---
+
+## 🧪 Example Flow
+
+1. Upload `world-war-2-notes.pdf`.
+2. Dill → Claude: outputs JSON like:
+
+```json
+{
+  "presentationTitle": "World War II",
+  "slidesCount": 8,
+  "theme": { "backgroundColor": "#0B1B2B", "textColor": "#FFFFFF", "accentColor": "#10B981" },
+  "slides": [
+    { "layout": "TITLE_SLIDE", "title": "World War II", "subtitle": "One-Page Notes", "bullets": [] },
+    { "layout": "TITLE_AND_BODY", "title": "Causes", "bullets": ["Treaty of Versailles", "Rise of fascism", "Global depression"] }
+  ]
+}
+```
+
+3. Preview and tweak.
+4. Hit **Create in Google Slides**.
+5. Use voice: “Switch background to dark green.”
+
+---
+
+## 🛠️ Roadmap
+
+* [ ] Image support (inline or background images)
+* [ ] Export to PowerPoint / Keynote
+* [ ] Collaborative editing (multi-user)
+* [ ] More granular formatting (per-word styles exported to Slides API)
+
+---
+
+## 🤝 Contributing
+
+1. Fork the repo
+2. Create a feature branch (`git checkout -b feature/cool-thing`)
+3. Commit changes (`git commit -m "Add cool thing"`)
+4. Push branch and open PR
+
+---
+
+## 📜 License
+
+MIT © 2025 Your Name
