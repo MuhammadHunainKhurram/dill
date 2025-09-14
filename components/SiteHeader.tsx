@@ -1,8 +1,10 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
 export default function SiteHeader() {
+
 
 
   return (
@@ -11,10 +13,10 @@ export default function SiteHeader() {
         <div className="flex items-center gap-6">
           <Link href="/" className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-lg bg-gray-900 text-white grid place-items-center text-sm font-bold">P</div>
-            <span className="text-sm font-semibold tracking-tight">Dill</span>
+            <span className="text-sm font-semibold tracking-tight">PDF Locker</span>
           </Link>
           <nav className="flex items-center gap-4">
-            <Link href="/" className="text-sm text-gray-600 hover:text-gray-900">
+            < Link href="/" className="text-sm text-gray-600 hover:text-gray-900">
               Dashboard
             </Link>
             <Link href="/data-agent" className="text-sm text-gray-600 hover:text-gray-900">

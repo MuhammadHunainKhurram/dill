@@ -119,143 +119,48 @@ async function analyzeWithClaude(metadata: DatasetMetadata): Promise<AnalysisRes
     return getFallbackAnalysis(metadata);
   }
 
-  const prompt = 
-  `
-  You are producing a single JSON object that is easy to preview in a web app and easy to convert into Google Slides API requests.
+  const prompt = `You are a data-cleaning and analysis agent. 
+You must handle messy, real-world datasets with missing, conflicting, and noisy values. 
+You will infer, validate, and resolve issues as an expert analyst.
 
-Return ONLY valid RFC 8259 JSON. No markdown. No comments. No extra text.
+IMPORTANT: For reproducibility, you must specify EXACT data transformations that can be programmatically applied.
 
-CONTEXT
-- mode: one of "education" or "business".
-- source_text: text extracted from a PDF. It may be noisy.
-- csv_summary: optional structured summary from CSV/Excel analysis (columns, types, issues, trends). Present only in "business" mode.
-- num_slides: integer target for slide count.
-- include_images: boolean. If false, do not include any images.
-- theme_key: one of ["Material","Simple","Dark","Coral","Ocean","Sunset","Forest","Mono","Slate","Lavender","Emerald","Candy"]. Use this to set colors.
-- constraints:
-  - slides.length MUST equal num_slides.
-  - Keep slide titles ≤ 70 chars; bullet lines ≤ 140 chars; ≤ 6 bullets per slide.
-  - Prefer high-signal content, not boilerplate.
-  - If unsure about any value, return null or [].
-  - Do not invent external image URLs. If images are helpful, output imageSuggestion.query strings. If you know a reliable URL, you MAY include it.
+Dataset sample (first 20 rows):
+${JSON.stringify(metadata.sampleRows, null, 2)}
 
-THEME PRESETS
-- "Material": {"backgroundColor":"#ffffff","textColor":"#202124","accentColor":"#1a73e8"}
-- "Simple":   {"backgroundColor":"#ffffff","textColor":"#111827","accentColor":"#374151"}
-- "Dark":     {"backgroundColor":"#111827","textColor":"#F9FAFB","accentColor":"#10B981"}
-- "Coral":    {"backgroundColor":"#fff7ed","textColor":"#1f2937","accentColor":"#fb7185"}
-- "Ocean":    { backgroundColor: "#0b132b", textColor: "#e0e1dd", accentColor: "#00a8e8"},
-- "Sunset":   { backgroundColor: "#1f0a3a", textColor: "#fff7ed", accentColor: "#ff6b6b"},
-- "Forest":   { backgroundColor: "#0b2614", textColor: "#e5f4ea", accentColor: "#34d399"},
-- "Mono":     { backgroundColor: "#ffffff", textColor: "#0f172a", accentColor: "#0f172a"},
-- "Slate":    { backgroundColor: "#0f172a", textColor: "#e2e8f0", accentColor: "#64748b"},
-- "Lavender": { backgroundColor: "#f5f3ff", textColor: "#312e81", accentColor: "#8b5cf6"},
-- "Emerald":  { backgroundColor: "#052e2b", textColor: "#d1fae5", accentColor: "#34d399"},
-- "Candy":    { backgroundColor: "#fff1f2", textColor: "#1f2937", accentColor: "#ec4899"},
+Metadata:
+- Columns: ${metadata.columns.join(', ')}
+- Total rows: ${metadata.rowCount}
+- Column types: ${JSON.stringify(metadata.columnTypes, null, 2)}
+- Missing values per column: ${JSON.stringify(metadata.missingValues, null, 2)}
+- Duplicate rows: ${metadata.duplicateRows}
 
-ALLOWED LAYOUTS (pick one per slide)
-["TITLE","TITLE_AND_BODY","SECTION_HEADER","TWO_COLUMN","IMAGE_ONLY","QUOTE","BULLETS"]
+Tasks:
+1. Identify missing, inconsistent, or duplicate values.
+2. Suggest AND justify cleaning strategies with SPECIFIC transformations (e.g., "Fill missing Age values with median=32.5", "Convert 'N/A' strings to null in column X").
+3. Perform data validation: detect invalid formats, out-of-range values, or conflicting sources.
+4. For each transformation, provide the exact operation and parameters.
+5. Provide 2–3 quick insights or anomalies in the dataset.
+6. Suggest 1–2 useful plots (with chart type and axes).
 
-GOOGLE SLIDES API SHAPES (for planning)
-- Shapes: "TEXT_BOX" for text content.
-- Images: use "createImage" with a sourceUrl (only if you provided a URL); otherwise omit.
-- Use deterministic objectIds so a client can build a batchUpdate: 
-  - slide IDs: "s1","s2",... 
-  - title box: "s{n}_title" 
-  - body box: "s{n}_body" 
-  - left/right columns: "s{n}_col1","s{n}_col2"
-  - image: "s{n}_img1","s{n}_img2"
-- Do not include a presentationId. The client will supply it.
-
-OUTPUT SHAPE
+Return your answer as JSON with keys:
 {
-  "success": boolean,
-  "presentationTitle": string|null,
-  "mode": "education"|"business",
-  "theme": {
-    "key": "Material"|"Simple"|"Dark"|"Coral"|"Ocean"|"Sunset"|"Forest"|"Mono"|"Slate"|"Lavender"|"Emerald"|"Candy",
-    "backgroundColor": string,   // hex
-    "textColor": string,         // hex
-    "accentColor": string,       // hex
-    "backgroundImageUrl": string|null
-  },
-  "slides": [
-    {
-      "id": "s1",
-      "layout": "TITLE_AND_BODY",
-      "title": string,
-      "bullets": [string, ...],      // 0-6 items
-      "notes": string|null,
-      "image": {
-        "url": string|null,          // only if you are confident the URL is stable
-        "background": boolean,       // true => use as slide background
-        "alt": string|null,
-        "imageSuggestion": { "query": string|null } // if url is null and include_images=true
-      }
-    }
-  ],
-  "analysis": {                     // present in both modes; richer in "business"
-    "trends": [string, ...],
-    "discrepancies": [
-      {
-        "id": string,               // stable slug like "missing-dates"
-        "severity": "low"|"medium"|"high",
-        "description": string,
-        "evidence": [string, ...],  // short quotes, column names, counts
-        "proposed_fix": string|null
-      }
-    ]
-  },
-  "slides_api_plan": {              // plan the Google Slides API requests; the client will send them
-    "requests": [
-      // Create slides with predefined layouts
-      { "createSlide": { "objectId": "s1", "slideLayoutReference": { "predefinedLayout": "TITLE_AND_BODY" } } },
-      // Create title box, body box, images, and insert text/bullets
-      { "createShape": { "objectId": "s1_title", "shapeType": "TEXT_BOX", "elementProperties": { "pageObjectId": "s1", "size": { "width": { "magnitude": 700, "unit": "PT" }, "height": { "magnitude": 60, "unit": "PT" } }, "transform": { "scaleX": 1, "scaleY": 1, "translateX": 40, "translateY": 60, "unit": "PT" } } } },
-      { "insertText": { "objectId": "s1_title", "insertionIndex": 0, "text": "<title for s1>" } },
-      { "createShape": { "objectId": "s1_body", "shapeType": "TEXT_BOX", "elementProperties": { "pageObjectId": "s1", "size": { "width": { "magnitude": 700, "unit": "PT" }, "height": { "magnitude": 360, "unit": "PT" } }, "transform": { "scaleX": 1, "scaleY": 1, "translateX": 40, "translateY": 140, "unit": "PT" } } } },
-      { "insertText": { "objectId": "s1_body", "insertionIndex": 0, "text": "- bullet one\n- bullet two" } },
-      { "createParagraphBullets": { "objectId": "s1_body", "textRange": { "type": "ALL" }, "bulletPreset": "BULLET_DISC_CIRCLE_SQUARE" } },
-      // Optional image if a URL is present for that slide (omit if url is null)
-      { "createImage": { "objectId": "s1_img1", "url": "https://example.com/image.jpg", "elementProperties": { "pageObjectId": "s1", "size": { "width": { "magnitude": 300, "unit": "PT" }, "height": { "magnitude": 200, "unit": "PT" } }, "transform": { "scaleX": 1, "scaleY": 1, "translateX": 440, "translateY": 160, "unit": "PT" } } } },
-      // Example: set slide background color to theme.backgroundColor
-      { "updatePageProperties": { "objectId": "s1", "fields": "pageBackgroundFill.solidFill.color", "pageProperties": { "pageBackgroundFill": { "solidFill": { "color": { "rgbColor": { "red": 1, "green": 1, "blue": 1 } } } } } } }
-    ],
-    "notes": "Requests are examples. Repeat per slide with your deterministic objectIds. Omit createImage when image.url is null."
-  }
-}
-
-INSTRUCTIONS
-1) Read the inputs, produce a crisp deck. Use num_slides exactly.
-2) Use theme_key to set theme colors from the presets above. You may keep deck.theme.backgroundImageUrl = null.
-3) For "education", focus on clear teaching flow: title, outline, key ideas, examples, recap.
-4) For "business", include a short analysis section with trends and discrepancies that a user can choose to include in slides.
-5) In slides_api_plan.requests, include enough operations to:
-   - create each slide with a predefined layout,
-   - add title and body text boxes,
-   - insert the bullet text and turn it into bullet lists,
-   - optionally add an image if image.url is provided,
-   - optionally set slide background to the theme background color.
-   Keep IDs deterministic as specified. Do NOT include presentationId.
-6) Output only the JSON object.
-
-INPUTS
-{
-  "mode": "MODE_HERE",                       // "education" or "business"
-  "source_text": "SOURCE_TEXT_HERE",
-  "csv_summary": CSV_SUMMARY_OR_NULL,        // null for education
-  "num_slides": NUM_SLIDES_HERE,             // integer
-  "include_images": INCLUDE_IMAGES_BOOL,     // true or false
-  "theme_key": "THEME_KEY_HERE"              // Material|Simple|Dark|Coral
-}
-
-  `;
+  "cleaning_notes": [ { 
+    "issue": "...", 
+    "resolution": "...", 
+    "justification": "...",
+    "transformation": "EXACT operation to perform (e.g., 'fillna(median)', 'replace(N/A, null)', 'drop_duplicates()')"
+  } ],
+  "validation_report": [ { "field": "...", "status": "valid|warning|error", "message": "...", "count": 0 } ],
+  "insights": [ "..." ],
+  "plots": [ { "type": "bar|line|scatter|histogram", "x_axis": "...", "y_axis": "...", "description": "..." } ]
+}`;
 
   try {
     console.log("Calling Claude API...");
     const response = await anthropic.messages.create({
       model: "claude-3-5-sonnet-20240620",
-      max_tokens: 4096,
+      max_tokens: 2000,
       messages: [
         {
           role: "user",
