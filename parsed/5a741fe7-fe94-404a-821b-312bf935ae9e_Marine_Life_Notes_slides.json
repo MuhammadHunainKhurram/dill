@@ -1,0 +1,87 @@
+{
+  "original_name": "Marine Life Notes.pdf",
+  "presentationTitle": "Bioluminescence in Marine Life",
+  "generated_at": "2025-09-14T12:01:41.121Z",
+  "slides": [
+    {
+      "title": "Definition",
+      "bullets": [
+        "Bioluminescence is the production and emission of light by living organisms.",
+        "It occurs when a chemical reaction inside the organism produces energy in the form of visible light.",
+        "Unlike fluorescence, bioluminescence does not require external light sources."
+      ],
+      "image": {
+        "url": null,
+        "background": false,
+        "alt": null
+      },
+      "notes": null
+    },
+    {
+      "title": "Key Chemicals",
+      "bullets": [
+        "Luciferin: the molecule that produces light when oxidized.",
+        "Luciferase: the enzyme that catalyzes the oxidation of luciferin.",
+        "ATP: energy source for some bioluminescent reactions."
+      ],
+      "image": {
+        "url": null,
+        "background": false,
+        "alt": null
+      },
+      "notes": null
+    },
+    {
+      "title": "Functions in Marine Life",
+      "bullets": [
+        "Camouflage (Counter-illumination): Some organisms, like certain squid, produce light on their bellies to match the faint light from above, making them less visible to predators below.",
+        "Attraction: Anglerfish have bioluminescent lures to attract prey. Similarly, some jellyfish use light to lure small fish.",
+        "Communication: Certain species of marine worms and shrimp use light signals to find mates or coordinate group behaviors.",
+        "Defense: Some squids and small crustaceans release bioluminescent fluids to distract predators, allowing escape."
+      ],
+      "image": {
+        "url": null,
+        "background": false,
+        "alt": null
+      },
+      "notes": null
+    },
+    {
+      "title": "Examples of Bioluminescent Organisms",
+      "bullets": [
+        "Firefly Squid (Watasenia scintillans): Found in Japan, glows blue in large swarms, attracting tourists and predators alike.",
+        "Deep-sea Anglerfish: Uses a luminescent lure to attract prey in the pitch-black deep ocean.",
+        "Dinoflagellates: Microscopic plankton that glow in waves when disturbed, causing \"sea sparkle\".",
+        "Jellyfish: Many deep-sea species have bioluminescent patterns for communication or defense."
+      ],
+      "image": {
+        "url": null,
+        "background": false,
+        "alt": null
+      },
+      "notes": null
+    },
+    {
+      "title": "Interesting Facts",
+      "bullets": [
+        "Bioluminescence is more common in deep-sea environments than shallow waters because sunlight cannot reach the depths.",
+        "The color of bioluminescent light is typically blue or green because these wavelengths travel farthest in water.",
+        "Some fish can control the intensity and duration of their glow, flashing patterns to signal warnings or confuse predators.",
+        "Scientists are studying bioluminescence for applications in medical imaging, environmental monitoring, and bioengineering."
+      ],
+      "image": {
+        "url": null,
+        "background": false,
+        "alt": null
+      },
+      "notes": null
+    }
+  ],
+  "num_slides": 5,
+  "theme": {
+    "backgroundColor": "#111827",
+    "textColor": "#F9FAFB",
+    "accentColor": "#10B981",
+    "backgroundImageUrl": null
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "original_name": "WW2 Notes.pdf",
+  "presentationTitle": "World War II (1939–1945): One-Page Notes",
+  "generated_at": "2025-09-14T13:42:48.850Z",
+  "slides": [
+    {
+      "layout": "SECTION_HEADER",
+      "title": "Causes",
+      "image": {
+        "url": null,
+        "background": false,
+        "alt": null
+      }
+    },
+    {
+      "layout": "PARAGRAPH",
+      "paragraph": "Treaty of Versailles, rise of fascism in Germany, Italy, Japan; global depression; appeasement of Hitler; failure of the League of Nations.",
+      "image": {
+        "url": null,
+        "background": false,
+        "alt": null
+      }
+    },
+    {
+      "layout": "SECTION_HEADER",
+      "title": "Main Powers",
+      "image": {
+        "url": null,
+        "background": false,
+        "alt": null
+      }
+    },
+    {
+      "layout": "TWO_COLUMN",
+      "bullets": [
+        "Allied Powers: Britain, France, Soviet Union (joined 1941), United States (joined 1941), China",
+        "Axis Powers: Germany, Italy, Japan"
+      ],
+      "image": {
+        "url": null,
+        "background": false,
+        "alt": null
+      }
+    },
+    {
+      "layout": "SECTION_HEADER",
+      "title": "Major Events",
+      "image": {
+        "url": null,
+        "background": false,
+        "alt": null
+      }
+    },
+    {
+      "layout": "PARAGRAPH",
+      "paragraph": "1939: Germany invades Poland; WWII begins. 1940: Fall of France; Battle of Britain. 1941: Operation Barbarossa (Germany invades USSR); Pearl Harbor attack brings US into war. 1942–43: Turning points with battles like Stalingrad (USSR), Midway (Pacific). 1944: D-Day (Allied invasion of Normandy, France). 1945: Germany surrenders (May); atomic bombs dropped on Hiroshima and Nagasaki; Japan surrenders (August).",
+      "image": {
+        "url": null,
+        "background": false,
+        "alt": null
+      }
+    },
+    {
+      "layout": "SECTION_HEADER",
+      "title": "Outcomes",
+      "image": {
+        "url": null,
+        "background": false,
+        "alt": null
+      }
+    },
+    {
+      "layout": "PARAGRAPH",
+      "paragraph": "United Nations founded (1945), Cold War begins between US & USSR, Europe divided; Germany occupied, Decolonization in Asia, Africa.",
+      "image": {
+        "url": null,
+        "background": false,
+        "alt": null
+      }
+    }
+  ],
+  "num_slides": 8,
+  "theme": {
+    "backgroundColor": "#0b132b",
+    "textColor": "#e0e1dd",
+    "accentColor": "#00a8e8",
+    "backgroundImageUrl": null
+  }
+}

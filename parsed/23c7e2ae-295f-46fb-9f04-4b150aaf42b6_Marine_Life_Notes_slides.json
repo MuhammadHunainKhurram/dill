@@ -1,0 +1,85 @@
+{
+  "original_name": "Marine Life Notes.pdf",
+  "presentationTitle": "Creating a Visually Balanced Slide Deck",
+  "generated_at": "2025-09-14T14:39:30.376Z",
+  "slides": [
+    {
+      "layout": "TITLE_SLIDE",
+      "title": "Creating a Visually Balanced Slide Deck",
+      "subtitle": "From Provided Text",
+      "titleStyle": {
+        "fontFamily": "Inter",
+        "fontSize": 52,
+        "color": "#333333",
+        "align": "CENTER",
+        "bold": [
+          "Creating a Visually Balanced"
+        ],
+        "italic": [],
+        "underline": []
+      },
+      "bodyStyle": {
+        "fontFamily": "Inter",
+        "fontSize": 24,
+        "color": "#333333",
+        "align": "CENTER",
+        "bold": [
+          "From Provided Text"
+        ],
+        "italic": [],
+        "underline": []
+      }
+    },
+    {
+      "layout": "TABLE_OF_CONTENTS",
+      "title": "Table of Contents",
+      "tocItems": [
+        "Goal",
+        "Schema",
+        "Style Rules",
+        "Slide 1: Title Slide",
+        "Slide 2: Goal",
+        "Slide 3: Schema",
+        "Slide 4: Style Rules",
+        "Slide 5: Conclusion"
+      ]
+    },
+    {
+      "layout": "TITLE_AND_BODY",
+      "title": "Goal",
+      "paragraph": "Create a complete, visually balanced slide deck from the provided text. Choose slide layouts and per-slide typography/formatting. Include a Title slide yourself. Add a Table of Contents if the deck benefits from it. Add a Conclusion slide if it helps. Add an Appendix ONLY if you detect external links; produce MLA9-styled citations."
+    },
+    {
+      "layout": "TITLE_AND_BODY",
+      "title": "Schema",
+      "paragraph": "The provided schema defines the structure and requirements for the slide deck, including the presentation title, slide count, theme, and details for each slide."
+    },
+    {
+      "layout": "TITLE_AND_BODY",
+      "title": "Style Rules",
+      "paragraph": "The style rules guide the visual design of the slide deck, including font choices, sizing, alignment, and use of color. These rules help ensure a visually balanced and consistent presentation."
+    },
+    {
+      "layout": "SECTION_AND_DESC",
+      "title": "Slide 1: Title Slide",
+      "paragraph": "The title slide includes the presentation title and subtitle, using a centered layout and larger font sizes to establish the overall tone."
+    },
+    {
+      "layout": "SECTION_AND_DESC",
+      "title": "Slide 2: Goal",
+      "paragraph": "The goal slide clearly outlines the objective of the presentation, using a title and body layout with a paragraph of text."
+    },
+    {
+      "layout": "CONCLUSION",
+      "title": "Conclusion",
+      "paragraph": "By following the provided schema and style rules, the resulting slide deck will be visually balanced and effectively communicate the key information to the audience."
+    }
+  ],
+  "num_slides": 8,
+  "theme": {
+    "backgroundColor": "#ffffff",
+    "textColor": "#111827",
+    "accentColor": "#374151",
+    "backgroundImageUrl": null
+  }
+}

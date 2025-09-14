@@ -1,7 +1,7 @@
+// components/DocumentList.tsx
 "use client";
 
 import { useEffect, useState } from "react";
-import { createBrowserClient } from "@/lib/supabase-browser";
 
 type Parsed = {
   id: string;
@@ -14,55 +14,70 @@ type Parsed = {
 };
 
 export default function DocumentList() {
-  const supabase = createBrowserClient();
   const [items, setItems] = useState<Parsed[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { setLoading(false); return; }
-
-      const { data, error } = await supabase
-        .from("parsed_documents")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (!error && data) setItems(data as Parsed[]);
-      setLoading(false);
+      try {
+        const res = await fetch("/api/parsed", { cache: "no-store" });
+        if (!res.ok) throw new Error("Failed to load");
+        const data: Parsed[] = await res.json();
+        setItems(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
     };
     load();
-  }, [supabase]);
+  }, []);
 
   const download = async (path: string, suggestedName: string) => {
-    const { data, error } = await supabase.storage.from("parsed").download(path);
-    if (error) return alert(error.message);
-    const url = URL.createObjectURL(data);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = suggestedName;
-    a.click();
-    URL.revokeObjectURL(url);
+    try {
+      const res = await fetch(`/api/parsed/download?path=${encodeURIComponent(path)}`);
+      if (!res.ok) throw new Error("Download failed");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = suggestedName;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err: any) {
+      alert(err.message || "Download failed");
+    }
   };
 
   const del = async (row: Parsed) => {
     if (!confirm(`Delete parsed file for "${row.original_name}"?`)) return;
-
-    const { error: sErr } = await supabase.storage.from("parsed").remove([row.path]);
-    if (sErr) return alert(sErr.message);
-
-    const { error: dErr } = await supabase.from("parsed_documents").delete().eq("id", row.id);
-    if (dErr) return alert(dErr.message);
-
-    setItems(prev => prev.filter(x => x.id !== row.id));
+    try {
+      const res = await fetch(`/api/parsed?id=${encodeURIComponent(row.id)}`, {
+        method: "DELETE",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ path: row.path }),
+      });
+      if (!res.ok) throw new Error("Delete failed");
+      setItems(prev => prev.filter(x => x.id !== row.id));
+    } catch (err: any) {
+      alert(err.message || "Delete failed");
+    }
   };
 
   if (loading) {
-    return <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm text-sm text-gray-600">Loading…</div>;
+    return (
+      <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm text-sm text-gray-600">
+        Loading…
+      </div>
+    );
   }
 
   if (items.length === 0) {
-    return <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm text-sm text-gray-600">No parsed files yet.</div>;
+    return (
+      <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm text-sm text-gray-600">
+        No parsed files yet.
+      </div>
+    );
   }
 
   return (
@@ -71,9 +86,9 @@ export default function DocumentList() {
         <div key={it.id} className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
           <div className="truncate text-sm font-semibold">{it.original_name}</div>
           <div className="mt-1 text-xs text-gray-600">
-            {new Date(it.created_at).toLocaleString()} • {it.content_type.replace("application/","")}
+            {new Date(it.created_at).toLocaleString()} • {it.content_type.replace("application/", "")}
             {typeof it.page_count === "number" ? ` • ${it.page_count} pages` : ""}
-            {typeof it.char_count === "number" ? ` • ${Math.round(it.char_count/1000)}k chars` : ""}
+            {typeof it.char_count === "number" ? ` • ${Math.round(it.char_count / 1000)}k chars` : ""}
           </div>
 
           <Preview path={it.path} contentType={it.content_type} />
@@ -104,34 +119,33 @@ export default function DocumentList() {
 }
 
 function Preview({ path, contentType }: { path: string; contentType: string }) {
-  const supabase = createBrowserClient();
   const [snippet, setSnippet] = useState<string | null>(null);
 
   useEffect(() => {
     const run = async () => {
-      const { data, error } = await supabase.storage.from("parsed").download(path);
-      if (error || !data) return;
+      try {
+        const res = await fetch(`/api/parsed/preview?path=${encodeURIComponent(path)}`);
+        if (!res.ok) return;
+        const text = await res.text();
 
-      const text = await data.text();
-      if (contentType === "application/json") {
-        try {
-          const obj = JSON.parse(text);
-          const raw = typeof obj.text === "string" ? obj.text : JSON.stringify(obj);
-          setSnippet(raw.slice(0, 180));
-        } catch {
+        if (contentType === "application/json") {
+          try {
+            const obj = JSON.parse(text);
+            const raw = typeof obj.text === "string" ? obj.text : JSON.stringify(obj);
+            setSnippet(raw.slice(0, 180));
+          } catch {
+            setSnippet(text.slice(0, 180));
+          }
+        } else {
           setSnippet(text.slice(0, 180));
         }
-      } else {
-        setSnippet(text.slice(0, 180));
+      } catch {
+        // ignore
       }
     };
     run();
-  }, [path, contentType, supabase]);
+  }, [path, contentType]);
 
   if (!snippet) return null;
-  return (
-    <div className="mt-3 rounded-lg bg-gray-50 p-3 text-xs text-gray-700">
-      {snippet}…
-    </div>
-  );
+  return <div className="mt-3 rounded-lg bg-gray-50 p-3 text-xs text-gray-700">{snippet}…</div>;
 }

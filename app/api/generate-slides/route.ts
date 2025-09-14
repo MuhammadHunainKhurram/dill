@@ -1,111 +1,78 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { createServerClient } from "@supabase/ssr";
-import { generateSlidesFromPDF } from "@/lib/pdf-slides";
+import { promises as fs } from "fs";
+import path from "path";
+import crypto from "crypto";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-function getServerSupabase() {
-  const cookieStore = cookies();
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get: (name: string) => cookieStore.get(name)?.value,
-        set: () => {},
-        remove: () => {},
-      },
-    }
-  );
+const PARSED_DIR = process.env.PARSED_DIR || path.join(process.cwd(), "parsed");
+
+const THEMES: Record<
+  string,
+  { backgroundColor: string; textColor: string; accentColor: string; backgroundImageUrl: string | null }
+> = {
+  Material: { backgroundColor: "#ffffff", textColor: "#202124", accentColor: "#1a73e8", backgroundImageUrl: null },
+  Simple:   { backgroundColor: "#ffffff", textColor: "#111827", accentColor: "#374151", backgroundImageUrl: null },
+  Dark:     { backgroundColor: "#111827", textColor: "#F9FAFB", accentColor: "#10B981", backgroundImageUrl: null },
+  Coral:    { backgroundColor: "#fff7ed", textColor: "#1f2937", accentColor: "#fb7185", backgroundImageUrl: null },
+  Ocean:    { backgroundColor: "#0b132b", textColor: "#e0e1dd", accentColor: "#00a8e8", backgroundImageUrl: null },
+  Sunset:   { backgroundColor: "#1f0a3a", textColor: "#fff7ed", accentColor: "#ff6b6b", backgroundImageUrl: null },
+  Forest:   { backgroundColor: "#0b2614", textColor: "#e5f4ea", accentColor: "#34d399", backgroundImageUrl: null },
+  Mono:     { backgroundColor: "#ffffff", textColor: "#0f172a", accentColor: "#0f172a", backgroundImageUrl: null },
+  Slate:    { backgroundColor: "#0f172a", textColor: "#e2e8f0", accentColor: "#64748b", backgroundImageUrl: null },
+  Lavender: { backgroundColor: "#f5f3ff", textColor: "#312e81", accentColor: "#8b5cf6", backgroundImageUrl: null },
+  Emerald:  { backgroundColor: "#052e2b", textColor: "#d1fae5", accentColor: "#34d399", backgroundImageUrl: null },
+  Candy:    { backgroundColor: "#fff1f2", textColor: "#1f2937", accentColor: "#ec4899", backgroundImageUrl: null },
+};
+
+
+export async function GET() {
+  return NextResponse.json({ ok: true, route: "/api/generate-slides" });
 }
 
 export async function POST(req: Request) {
   try {
-    const supabase = getServerSupabase();
-
     const form = await req.formData();
-
-    // (optional) accept tokens from client and set session
-    const access_token = (form.get("access_token") as string) || "";
-    const refresh_token = (form.get("refresh_token") as string) || "";
-    if (access_token) {
-      const { error: setErr } = await supabase.auth.setSession({
-        access_token,
-        refresh_token,
-      });
-      if (setErr) {
-        return NextResponse.json({ ok: false, error: setErr.message }, { status: 401 });
-      }
-    }
-
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ ok: false, error: "Not authenticated" }, { status: 401 });
-
     const file = form.get("file") as File | null;
-    const numSlides = parseInt((form.get("numSlides") as string) || "5");
-    
+    const numSlidesRequested = parseInt((form.get("numSlides") as string) || "5", 10);
+    const themeKey = (form.get("theme") as string) || "";
+
     if (!file) return NextResponse.json({ ok: false, error: "file is required" }, { status: 400 });
     if (file.type !== "application/pdf") {
       return NextResponse.json({ ok: false, error: "only PDF accepted" }, { status: 400 });
     }
 
-    // Read bytes from uploaded File
-    const ab = await file.arrayBuffer();
-    const pdfBuffer = Buffer.from(ab);
+    // 🔽 Defer the import so the route can mount even if pdf-slides has ESM/CJS quirks
+    const { generateSlidesFromPDF } = await import("@/lib/pdf-slides");
 
-    // Generate slides using Anthropic
-    const slideResult = await generateSlidesFromPDF(pdfBuffer, numSlides, file.name);
-    
-    if (!slideResult.success) {
-      return NextResponse.json({ ok: false, error: slideResult.error }, { status: 500 });
+    const pdfBuffer = Buffer.from(await file.arrayBuffer());
+    const result = await generateSlidesFromPDF(pdfBuffer, numSlidesRequested, file.name);
+    if (!result.success || !result.deck) {
+      return NextResponse.json({ ok: false, error: result.error ?? "Slide generation failed" }, { status: 500 });
     }
 
-    // Build output for storage
-    const now = Date.now();
-    const safeName = file.name.replace(/\s+/g, "_").replace(/\.pdf$/i, "");
-    const storagePath = `${user.id}/${now}_${safeName}_slides.json`;
+    const deck = result.deck;
+    const slides = deck.slides;
 
-    const slideData = {
+    const payload: any = {
       original_name: file.name,
-      num_slides: numSlides,
+      presentationTitle: deck.presentationTitle || file.name.replace(/\.pdf$/i, ""),
       generated_at: new Date().toISOString(),
-      slides: slideResult.slides,
+      slides,
+      num_slides: slides.length,
+      theme: THEMES[themeKey] ?? deck.theme,
     };
 
-    const blob = new Blob([JSON.stringify(slideData, null, 2)], { type: "application/json" });
+    const id = crypto.randomUUID();
+    const safeName = file.name.replace(/\s+/g, "_").replace(/\.pdf$/i, "");
+    const fileName = `${id}_${safeName}_slides.json`;
 
-    // Upload to storage
-    const up = await supabase.storage.from("parsed").upload(storagePath, blob, {
-      contentType: "application/json",
-      upsert: false,
-    });
-    if (up.error) throw up.error;
+    await fs.mkdir(PARSED_DIR, { recursive: true });
+    await fs.writeFile(path.join(PARSED_DIR, fileName), JSON.stringify(payload, null, 2), "utf8");
 
-    // Insert DB row
-    const ins = await supabase
-      .from("parsed_documents")
-      .insert({
-        user_id: user.id,
-        original_name: `${file.name} (${numSlides} slides)`,
-        path: storagePath,
-        content_type: "application/json",
-        page_count: numSlides,
-        char_count: slideResult.slides?.length || 0,
-      })
-      .select("id")
-      .single();
-    if (ins.error) throw ins.error;
-
-    return NextResponse.json({ 
-      ok: true, 
-      id: ins.data.id, 
-      path: storagePath, 
-      slides: slideResult.slides,
-      numSlides 
-    });
+    return NextResponse.json({ ok: true, id, path: fileName, ...payload });
   } catch (err: any) {
     console.error("SLIDE_GENERATION_ERROR", err);
     return NextResponse.json({ ok: false, error: err?.message ?? "Unknown server error" }, { status: 500 });

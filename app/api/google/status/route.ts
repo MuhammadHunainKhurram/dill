@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
 export const runtime = "nodejs";
-export const revalidate = 0;
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  return NextResponse.json({ ok: true, message: "Ingest endpoint ready." });
+  const at = cookies().get("g_at")?.value || "";
+  return NextResponse.json({ ok: true, authed: !!at });
 }

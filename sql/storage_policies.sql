@@ -1,29 +1,7 @@
--- Create a private bucket named 'pdfs' first in Storage UI (Public: OFF)
--- Then add RLS policies on storage.objects:
+-- Legacy SQL file - Storage policies have been removed
+-- This application now processes files in-memory without persistent storage
+-- Files are uploaded, processed, and results are returned directly
 
--- READ: user can list/get only their folder under 'pdfs'
-create policy "storage_read_own_pdfs"
-on storage.objects
-for select
-using (
-  bucket_id = 'pdfs'
-  and split_part(name, '/', 1) = auth.uid()::text
-);
-
--- WRITE (upload): user can upload only into their own folder
-create policy "storage_upload_own_pdfs"
-on storage.objects
-for insert
-with check (
-  bucket_id = 'pdfs'
-  and split_part(name, '/', 1) = auth.uid()::text
-);
-
--- Optional: DELETE their own files
-create policy "storage_delete_own_pdfs"
-on storage.objects
-for delete
-using (
-  bucket_id = 'pdfs'
-  and split_part(name, '/', 1) = auth.uid()::text
-);
+-- If you need to restore file storage functionality in the future,
+-- consider using a simple file system approach or cloud storage
+-- without complex authentication policies

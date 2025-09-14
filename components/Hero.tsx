@@ -1,6 +1,5 @@
 "use client";
 
-import AuthButton from "@/components/AuthButton";
 
 export default function Hero() {
   return (
@@ -16,9 +15,6 @@ export default function Hero() {
           <p className="mt-4 max-w-prose text-sm text-gray-600">
             Sign in with Google, upload PDFs to your private space, and download them anytime.
           </p>
-          <div className="mt-6">
-            <AuthButton signedIn={false} />
-          </div>
 
           <ul className="mt-6 grid gap-3 text-sm text-gray-700">
             <li className="flex items-start gap-2"><span>✅</span><span>Google sign-in only when you need it</span></li>

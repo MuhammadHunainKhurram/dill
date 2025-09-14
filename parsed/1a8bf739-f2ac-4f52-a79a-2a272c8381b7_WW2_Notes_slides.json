@@ -1,0 +1,113 @@
+{
+  "original_name": "WW2 Notes.pdf",
+  "presentationTitle": "World War II (1939–1945): One-Page Notes",
+  "generated_at": "2025-09-14T11:58:29.583Z",
+  "slides": [
+    {
+      "title": "Causes",
+      "bullets": [
+        "Treaty of Versailles",
+        "Rise of fascism in Germany, Italy, Japan",
+        "Global depression",
+        "Appeasement of Hitler",
+        "Failure of the League of Nations"
+      ],
+      "image": {
+        "url": null,
+        "background": false,
+        "alt": null
+      },
+      "notes": null
+    },
+    {
+      "title": "Main Powers",
+      "bullets": [
+        "Allied Powers: Britain, France, Soviet Union (joined 1941), United States (joined 1941), China",
+        "Axis Powers: Germany, Italy, Japan"
+      ],
+      "image": {
+        "url": null,
+        "background": false,
+        "alt": null
+      },
+      "notes": null
+    },
+    {
+      "title": "Major Events",
+      "bullets": [
+        "1939: Germany invades Poland; WWII begins",
+        "1940: Fall of France; Battle of Britain",
+        "1941: Operation Barbarossa (Germany invades USSR); Pearl Harbor attack brings US into war",
+        "1942–43: Turning points with battles like Stalingrad (USSR), Midway (Pacific)",
+        "1944: D-Day (Allied invasion of Normandy, France)",
+        "1945: Germany surrenders (May); atomic bombs dropped on Hiroshima and Nagasaki; Japan surrenders (August)"
+      ],
+      "image": {
+        "url": null,
+        "background": false,
+        "alt": null
+      },
+      "notes": null
+    },
+    {
+      "title": "The Holocaust",
+      "bullets": [
+        "Systematic genocide of 6 million Jews and millions of other minorities by Nazi Germany"
+      ],
+      "image": {
+        "url": null,
+        "background": false,
+        "alt": null
+      },
+      "notes": null
+    },
+    {
+      "title": "Outcomes",
+      "bullets": [
+        "United Nations founded (1945)",
+        "Cold War begins between US & USSR",
+        "Europe divided; Germany occupied",
+        "Decolonization in Asia, Africa"
+      ],
+      "image": {
+        "url": null,
+        "background": false,
+        "alt": null
+      },
+      "notes": null
+    },
+    {
+      "title": "Key Leaders",
+      "bullets": [
+        "Allies: Franklin D. Roosevelt, Winston Churchill, Joseph Stalin",
+        "Axis: Adolf Hitler, Benito Mussolini, Emperor Hirohito"
+      ],
+      "image": {
+        "url": null,
+        "background": false,
+        "alt": null
+      },
+      "notes": null
+    },
+    {
+      "title": "Significance",
+      "bullets": [
+        "Deadliest conflict in history (60M+ deaths)",
+        "Huge changes in technology, world politics, society"
+      ],
+      "image": {
+        "url": null,
+        "background": false,
+        "alt": null
+      },
+      "notes": null
+    }
+  ],
+  "num_slides": 7,
+  "theme": {
+    "backgroundColor": "#ffffff",
+    "textColor": "#202124",
+    "accentColor": "#1a73e8",
+    "backgroundImageUrl": null
+  }
+}
