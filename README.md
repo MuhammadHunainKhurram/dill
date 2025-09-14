@@ -1,13 +1,3 @@
-# PDF Locker (Next.js + Supabase)
-
-Features:
-- Google login via Supabase Auth
-- Upload PDFs to a **private** Supabase Storage bucket
-- List and download your previously uploaded PDFs
-
-## Overall Purpose
-
-The application is designed to take a PDF file from a user, process it using an AI, and generate a set of presentation slides based on the content. This is a powerful tool for quickly summarizing and creating professional-looking slide decks for educational or business purposes.
 
 ---
 
@@ -73,6 +63,10 @@ The project is organized as a monorepo containing:
 - **🔗 Routing**: react-router-dom for smooth navigation  
 
 ---
+## Overall Purpose
+
+The application is designed to take a PDF file from a user, process it using an AI, and generate a set of presentation slides based on the content. This is a powerful tool for quickly summarizing and creating professional-looking slide decks for educational or business purposes.
+
 ## Setup
 
 1. **Create project**
