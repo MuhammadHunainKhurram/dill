@@ -207,7 +207,6 @@ function getText(res: any): string {
   return block?.type === "text" && typeof block.text === "string" ? block.text : "";
 }
 
-/** ----- Hardened JSON parsing & repair ----- */
 
 function parseJsonLoose(raw: string): any {
   // Strip fences
