@@ -310,7 +310,7 @@ export default function MessyDataAgent() {
       </nav>
 
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Messy Data Agent</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Dill-Agent</h1>
         <p className="text-gray-600">Upload messy CSV/Excel files and let AI clean and analyze your data</p>
       </div>
 
