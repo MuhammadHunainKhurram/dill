@@ -38,7 +38,6 @@ export default function EducationPage() {
   const [result, setResult] = useState<ApiResult | null>(null);
   const [showJson, setShowJson] = useState(false);
 
-  // Check Google auth once on mount
   useEffect(() => {
     fetch("/api/google/status")
       .then((r) => r.json())
@@ -46,7 +45,6 @@ export default function EducationPage() {
       .catch(() => setAuthed(false));
   }, []);
 
-  // Generate slides JSON from PDF
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -78,7 +76,6 @@ export default function EducationPage() {
     }
   };
 
-  // Google auth helpers
   const signInWithGoogle = async () => {
     setError(null);
     try {
@@ -129,7 +126,6 @@ export default function EducationPage() {
     }
   };
 
-  // Derived bits
   const title =
     result?.presentationTitle ||
     result?.original_name ||
@@ -188,7 +184,6 @@ export default function EducationPage() {
         </div>
       </div>
 
-      {/* Generator form */}
       <form
         onSubmit={onSubmit}
         className="grid gap-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm"
@@ -268,8 +263,6 @@ export default function EducationPage() {
         )}
       </form>
 
-      {/* Visual preview */}
-      {/* Visual preview + voice commander */}
 {result?.slides?.length ? (
   <>
     <VoiceCommander
@@ -279,7 +272,6 @@ export default function EducationPage() {
         theme: result.theme || {},
         slides: result.slides,
       }}
-      // Keep your existing `result` shape in sync with edits
       setDeck={(d) =>
         setResult((prev: any) => ({
           ...(prev || {}),
@@ -302,7 +294,6 @@ export default function EducationPage() {
 
 
 
-      {/* JSON view */}
       {result && showJson && (
         <section className="mt-8">
           <div className="mb-2 flex items-center justify-between">

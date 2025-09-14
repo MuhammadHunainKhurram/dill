@@ -209,14 +209,11 @@ function getText(res: any): string {
 
 
 function parseJsonLoose(raw: string): any {
-  // Strip fences
   let s = String(raw || "").trim();
   s = s.replace(/^```json\s*/i, "")
        .replace(/^```\s*/i, "")
        .replace(/```$/i, "")
        .trim();
-
-  // Keep only outermost {...} or [...]
   const firstBrace = s.indexOf("{");
   const firstBracket = s.indexOf("[");
   const first =
@@ -232,17 +229,13 @@ function parseJsonLoose(raw: string): any {
     s = s.slice(first, last + 1);
   }
 
-  // Normalize: curly quotes -> straight
   s = s.replace(/[\u201C\u201D\u201E\u201F\u2033]/g, '"')
        .replace(/[\u2018\u2019\u2032]/g, "'");
 
-  // Remove trailing commas before } or ]
   s = s.replace(/,\s*([}\]])/g, "$1");
 
-  // Single-quoted keys -> double-quoted keys (safe cases only)
   s = s.replace(/'([^'\\]*?)'\s*:/g, (_m, key) => `"${key.replace(/"/g, '\\"')}" :`);
 
-  // Remove stray NULs
   s = s.replace(/\u0000/g, "");
 
   return JSON.parse(s);
@@ -268,7 +261,6 @@ async function robustParseOrRepair(raw: string) {
   }
 }
 
-/** ----- Main entry ----- */
 
 async function askForFixedJson(lastOutput: string, reason: string, schemaBlock: string) {
   const fixPrompt = `
@@ -299,7 +291,6 @@ export async function generateSlidesFromPDF(
     if (pdfBuffer.slice(0, 4).toString() !== "%PDF") return { success: false, error: "Invalid PDF file format" };
     if (!process.env.ANTHROPIC_API_KEY) return { success: false, error: "Anthropic API key not configured" };
 
-    // ← rename so we don't shadow the later "parsed" JSON
     const pdfParsed = await pdfParse(pdfBuffer);
     const trimmed = trimToTokenBudget(cleanText(pdfParsed.text || ""), 3500);
 
@@ -355,12 +346,9 @@ ${trimmed}
 const res = await callClaudeJSON(prompt);
 const raw = getText(res);
 
-// DEBUG: return raw JSON directly so you can inspect it
 console.log("=== RAW CLAUDE JSON START ===");
 console.log(raw);
 console.log("=== RAW CLAUDE JSON END ===");
-
-// Try parsing, but if it fails, return the raw text for debugging
 let parsedAny: any;
 try {
   parsedAny = parseJsonLoose(raw);
@@ -371,14 +359,11 @@ try {
   };
 }
 
-    // Claude sometimes returns { deck: {...} } or the object directly.
     const deckAny = parsedAny?.deck ? parsedAny.deck : parsedAny;
 
     if (!deckAny || !Array.isArray(deckAny.slides)) {
       throw new Error("JSON missing slides[]");
     }
-
-    // Normalize + defaults
     const deck: SlideDeck = {
       presentationTitle: deckAny.presentationTitle || originalName.replace(/\.pdf$/i, ""),
       slidesCount: Array.isArray(deckAny.slides) ? deckAny.slides.length : 0,
@@ -391,7 +376,6 @@ try {
       slides: deckAny.slides as SlideSpec[],
     };
 
-    // Final guardrails
     if (!deck || !Array.isArray(deck.slides)) {
       return { success: false, error: "JSON missing slides[]" };
     }

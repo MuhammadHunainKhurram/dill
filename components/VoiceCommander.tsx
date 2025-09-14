@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 type Align = 'START' | 'CENTER' | 'END' | 'JUSTIFIED';
 
@@ -14,294 +14,427 @@ type TextStyleSpec = {
   underline?: string[];
 };
 
-type Slide = {
-  layout?: string;
+type SlideSpec = {
+  layout?:
+    | 'TITLE_SLIDE'
+    | 'TABLE_OF_CONTENTS'
+    | 'CONCLUSION'
+    | 'APPENDIX'
+    | 'TITLE_AND_BODY'
+    | 'PARAGRAPH'
+    | 'TWO_COLUMN'
+    | 'SECTION_HEADER'
+    | 'QUOTE'
+    | 'TITLE_ONLY'
+    | 'ONE_COLUMN_TEXT'
+    | 'MAIN_POINT'
+    | 'SECTION_AND_DESC'
+    | 'CAPTION'
+    | 'BIG_NUMBER';
   title?: string | null;
   subtitle?: string | null;
   bullets?: string[];
   paragraph?: string | null;
   quote?: string | null;
   notes?: string | null;
+  tocItems?: string[] | null;
+  citations?: string[] | null;
   titleStyle?: TextStyleSpec;
   bodyStyle?: TextStyleSpec;
 };
 
 type Deck = {
   presentationTitle: string;
-  slidesCount: number;
+  slidesCount?: number;
   theme: {
-    backgroundColor: string | null;
-    textColor: string | null;
-    accentColor: string | null;
-    backgroundImageUrl: string | null;
+    backgroundColor?: string | null;
+    textColor?: string | null;
+    accentColor?: string | null;
+    backgroundImageUrl?: string | null;
   };
-  slides: Slide[];
+  slides: SlideSpec[];
 };
 
-type Props = {
-  deck: Deck | null;
+export default function VoiceCommander({
+  deck,
+  setDeck,
+}: {
+  deck: Deck;
   setDeck: (d: Deck) => void;
-  disabled?: boolean;
-};
-
-const layoutMap: Record<string, string> = {
-  'title_and_body': 'TITLE_AND_BODY',
-  'title and body': 'TITLE_AND_BODY',
-  'paragraph': 'PARAGRAPH',
-  'two_column': 'TWO_COLUMN',
-  'two column': 'TWO_COLUMN',
-  'section_header': 'SECTION_HEADER',
-  'section header': 'SECTION_HEADER',
-  'quote': 'QUOTE',
-  'title_only': 'TITLE_ONLY',
-  'title only': 'TITLE_ONLY',
-  'one column text': 'ONE_COLUMN_TEXT',
-  'main point': 'MAIN_POINT',
-  'section and description': 'SECTION_AND_DESC',
-  'caption': 'CAPTION',
-  'big number': 'BIG_NUMBER',
-};
-
-function speak(text: string) {
-  try {
-    const u = new SpeechSynthesisUtterance(text);
-    u.rate = 1.05;
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(u);
-  } catch {}
-}
-
-export default function VoiceCommander({ deck, setDeck, disabled }: Props) {
-  const [cmd, setCmd] = useState('');
+}) {
+  const [activeIdx, setActiveIdx] = useState(0);
   const [listening, setListening] = useState(false);
-  const recRef = useRef<any>(null);
+  const [lastCommand, setLastCommand] = useState('');
+  const history = useRef<Deck[]>([]);
 
-  const canVoice = typeof window !== 'undefined' && (
-    (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition
-  );
+  // Keep active index clamped
+  useEffect(() => {
+    if (!deck?.slides?.length) return;
+    setActiveIdx((i) => Math.min(Math.max(0, i), deck.slides.length - 1));
+  }, [deck?.slides?.length]);
 
-  function withDeck(mutator: (d: Deck) => string) {
-    if (!deck) return 'No deck loaded.';
-    const clone: Deck = JSON.parse(JSON.stringify(deck));
-    const msg = mutator(clone);
-    clone.slidesCount = clone.slides?.length ?? 0;
-    setDeck(clone);
-    return msg;
-  }
-
-  // --- Command parser / applier ---
-  function run(text: string) {
-    const raw = text.trim();
-    if (!raw) return;
-
-    // change the title of slide 2 to Puppies
-    let m = raw.match(/change (?:the )?title of slide (\d+) to (.+)/i);
-    if (m) {
-      const idx = Number(m[1]) - 1;
-      const newTitle = m[2].trim().replace(/^["']|["']$/g, '');
-      const msg = withDeck(d => {
-        if (!d.slides[idx]) return `Slide ${idx + 1} does not exist.`;
-        d.slides[idx].title = newTitle;
-        d.slides[idx].titleStyle ??= {};
-        return `Changed title of slide ${idx + 1} to "${newTitle}".`;
-      });
-      speak(msg);
-      return;
-    }
-
-    // change the format/layout of slide 4 to two column
-    m = raw.match(/change (?:the )?(?:format|layout) of slide (\d+) to (.+)/i);
-    if (m) {
-      const idx = Number(m[1]) - 1;
-      const key = (m[2] || '').toLowerCase().trim();
-      const layout = layoutMap[key] || layoutMap[key.replace(/-/g, ' ')] || key.toUpperCase();
-      const msg = withDeck(d => {
-        if (!d.slides[idx]) return `Slide ${idx + 1} does not exist.`;
-        d.slides[idx].layout = layout;
-        return `Set layout of slide ${idx + 1} to ${layout}.`;
-      });
-      speak(msg);
-      return;
-    }
-
-    // add a bullet to slide 3: This is a new point
-    m = raw.match(/add (?:a )?bullet (?:to|on) slide (\d+):?\s+(.+)/i);
-    if (m) {
-      const idx = Number(m[1]) - 1;
-      const bullet = m[2].trim().replace(/^[-•]\s*/, '');
-      const msg = withDeck(d => {
-        if (!d.slides[idx]) return `Slide ${idx + 1} does not exist.`;
-        d.slides[idx].bullets ??= [];
-        d.slides[idx].bullets!.push(bullet);
-        return `Added a bullet to slide ${idx + 1}.`;
-      });
-      speak(msg);
-      return;
-    }
-
-    // replace bullets on slide 2 with: a; b; c
-    m = raw.match(/replace bullets on slide (\d+) with:?\s+(.+)/i);
-    if (m) {
-      const idx = Number(m[1]) - 1;
-      const items = m[2].split(/[;•\-]\s*|,\s*/).map(s => s.trim()).filter(Boolean);
-      const msg = withDeck(d => {
-        if (!d.slides[idx]) return `Slide ${idx + 1} does not exist.`;
-        d.slides[idx].bullets = items;
-        d.slides[idx].paragraph = null;
-        return `Replaced bullets on slide ${idx + 1}.`;
-      });
-      speak(msg);
-      return;
-    }
-
-    // change paragraph on slide 5 to ...
-    m = raw.match(/change paragraph on slide (\d+) to (.+)/i);
-    if (m) {
-      const idx = Number(m[1]) - 1;
-      const para = m[2].trim().replace(/^["']|["']$/g, '');
-      const msg = withDeck(d => {
-        if (!d.slides[idx]) return `Slide ${idx + 1} does not exist.`;
-        d.slides[idx].paragraph = para;
-        d.slides[idx].bullets = [];
-        d.slides[idx].layout = 'PARAGRAPH';
-        return `Updated paragraph on slide ${idx + 1}.`;
-      });
-      speak(msg);
-      return;
-    }
-
-    // set title/body size or align on slide
-    m = raw.match(/(title|body) (size|align) on slide (\d+) to ([\w\-]+)$/i);
-    if (m) {
-      const area = m[1].toLowerCase();
-      const which = m[2].toLowerCase();
-      const idx = Number(m[3]) - 1;
-      const val = m[4].toLowerCase();
-      const msg = withDeck(d => {
-        if (!d.slides[idx]) return `Slide ${idx + 1} does not exist.`;
-        const style = area === 'title'
-          ? (d.slides[idx].titleStyle ??= {})
-          : (d.slides[idx].bodyStyle ??= {});
-        if (which === 'size') {
-          const n = Number(val);
-          if (!Number.isFinite(n)) return `Invalid size "${val}".`;
-          style.fontSize = n;
-          return `Set ${area} size on slide ${idx + 1} to ${n}pt.`;
-        } else {
-          const map: Record<string, Align> = {
-            left: 'START', start: 'START',
-            center: 'CENTER',
-            right: 'END', end: 'END',
-            justified: 'JUSTIFIED', justify: 'JUSTIFIED',
-          };
-          style.align = map[val] || 'START';
-          return `Set ${area} alignment on slide ${idx + 1} to ${style.align}.`;
-        }
-      });
-      speak(msg);
-      return;
-    }
-
-    // set theme colors quickly
-    m = raw.match(/set (background|text|accent) color to (#[0-9a-f]{6})/i);
-    if (m) {
-      const key = m[1].toLowerCase();
-      const hex = m[2];
-      const msg = withDeck(d => {
-        if (key === 'background') d.theme.backgroundColor = hex;
-        else if (key === 'text') d.theme.textColor = hex;
-        else d.theme.accentColor = hex;
-        return `Set ${key} color to ${hex}.`;
-      });
-      speak(msg);
-      return;
-    }
-
-    // rename presentation
-    m = raw.match(/rename (?:deck|presentation) to (.+)/i);
-    if (m) {
-      const title = m[1].trim().replace(/^["']|["']$/g, '');
-      const msg = withDeck(d => {
-        d.presentationTitle = title;
-        return `Renamed presentation to "${title}".`;
-      });
-      speak(msg);
-      return;
-    }
-
-    const fallback = `Sorry, I didn't understand: "${raw}". Try: "change the title of slide 2 to Puppies", "change the layout of slide 4 to two column", "add bullet to slide 3: New point", "title size on slide 1 to 42".`;
-    speak(fallback);
-  }
-
-  // --- Speech to text (Web Speech API) ---
-  function startListening() {
-    if (!canVoice) return;
-    if (listening) return;
-    const Rec = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    const rec = new Rec();
+  // --- Speech setup (Web Speech API) ---
+  const recognition = useMemo(() => {
+    if (typeof window === 'undefined') return null;
+    const w = window as any;
+    const Ctor = w.SpeechRecognition || w.webkitSpeechRecognition;
+    if (!Ctor) return null;
+    const rec = new Ctor();
     rec.lang = 'en-US';
     rec.interimResults = false;
-    rec.maxAlternatives = 1;
-    rec.onresult = (e: any) => {
-      const t = e.results?.[0]?.[0]?.transcript || '';
-      setCmd(t);
-      run(t);
+    rec.continuous = false;
+    return rec;
+  }, []);
+
+  useEffect(() => {
+    if (!recognition) return;
+    const handleResult = (e: any) => {
+      const transcript = Array.from(e.results)
+        .map((r: any) => r[0].transcript)
+        .join(' ')
+        .trim();
+      if (transcript) runCommand(transcript);
       setListening(false);
     };
-    rec.onerror = () => setListening(false);
-    rec.onend = () => setListening(false);
-    recRef.current = rec;
+    const handleEnd = () => setListening(false);
+
+    recognition.addEventListener('result', handleResult);
+    recognition.addEventListener('end', handleEnd);
+    return () => {
+      recognition.removeEventListener('result', handleResult);
+      recognition.removeEventListener('end', handleEnd);
+    };
+  }, [recognition]);
+
+  function startListening() {
+    if (!recognition) return;
     setListening(true);
-    rec.start();
+    try {
+      recognition.start();
+    } catch {
+      setListening(false);
+    }
   }
 
-  function stopListening() {
-    try { recRef.current?.stop?.(); } catch {}
-    setListening(false);
+  // --- Helpers ---
+  function pushHistory() {
+    // limit history to 25 steps
+    history.current.push(JSON.parse(JSON.stringify(deck)));
+    if (history.current.length > 25) history.current.shift();
+  }
+  function undo() {
+    const prev = history.current.pop();
+    if (prev) setDeck(prev);
   }
 
-  const micSupported = useMemo(() => !!canVoice, [canVoice]);
+  const colorMap: Record<string, string> = {
+    white: '#FFFFFF',
+    black: '#111827',
+    gray: '#374151',
+    slate: '#0F172A',
+    navy: '#0B1B2B',
+    red: '#EF4444',
+    orange: '#F59E0B',
+    amber: '#FBBF24',
+    yellow: '#FACC15',
+    lime: '#84CC16',
+    green: '#10B981',
+    emerald: '#059669',
+    teal: '#14B8A6',
+    cyan: '#06B6D4',
+    sky: '#0EA5E9',
+    blue: '#2563EB',
+    indigo: '#4F46E5',
+    violet: '#8B5CF6',
+    purple: '#7C3AED',
+    fuchsia: '#C026D3',
+    pink: '#EC4899',
+    rose: '#F43F5E',
+  };
+
+  function normalizeColor(word: string) {
+    const w = (word || '').toLowerCase().trim();
+    if (w.startsWith('#') && (w.length === 7 || w.length === 4)) return w;
+    return colorMap[w] || null;
+  }
+
+  function clamp(n: number, lo: number, hi: number) {
+    return Math.max(lo, Math.min(hi, n));
+  }
+
+  function ensureStyle(s: SlideSpec, which: 'titleStyle' | 'bodyStyle') {
+    if (!s[which]) s[which] = {};
+    if (!s[which]!.bold) s[which]!.bold = [];
+    if (!s[which]!.italic) s[which]!.italic = [];
+    if (!s[which]!.underline) s[which]!.underline = [];
+  }
+
+  function applyToDeck(mut: (copy: Deck) => void) {
+    pushHistory();
+    const copy = JSON.parse(JSON.stringify(deck)) as Deck;
+    mut(copy);
+    if (Array.isArray(copy.slides)) copy.slidesCount = copy.slides.length;
+    setDeck(copy);
+  }
+
+  // --- Command parser / executor ---
+  function runCommand(raw: string) {
+    const cmd = (raw || '').trim();
+    setLastCommand(cmd);
+    if (!cmd) return;
+
+    // Undo
+    if (/^undo$/i.test(cmd)) return undo();
+
+    // Go to slide N
+    {
+      const m = cmd.match(/^(go to|switch to|open)\s+slide\s+(\d+)/i);
+      if (m) {
+        const n = clamp(parseInt(m[2], 10) - 1, 0, deck.slides.length - 1);
+        setActiveIdx(n);
+        return;
+      }
+    }
+
+    // Change title or subtitle
+    {
+      const m = cmd.match(/^change\s+(title|subtitle)\s+(of\s+slide\s+(\d+)\s+)?to\s+(.+)/i);
+      if (m) {
+        const field = m[1].toLowerCase() as 'title' | 'subtitle';
+        const idx = m[3] ? clamp(parseInt(m[3], 10) - 1, 0, deck.slides.length - 1) : activeIdx;
+        const text = m[4].trim().replace(/^"(.*)"$/, '$1');
+        return applyToDeck((d) => {
+          d.slides[idx][field] = text;
+        });
+      }
+    }
+
+    // Add bullet
+    {
+      const m = cmd.match(/^add\s+bullet\s+(?:to\s+slide\s+(\d+)\s+)?(.+)/i);
+      if (m) {
+        const idx = m[1] ? clamp(parseInt(m[1], 10) - 1, 0, deck.slides.length - 1) : activeIdx;
+        const text = m[2].trim().replace(/^"(.*)"$/, '$1');
+        return applyToDeck((d) => {
+          const s = d.slides[idx];
+          if (!s.bullets) s.bullets = [];
+          s.bullets.push(text);
+          // clear paragraph if transitioning to bullets
+          if (s.paragraph && s.bullets.length > 0) s.paragraph = null;
+        });
+      }
+    }
+
+    // Replace bullets with a list (semicolon or comma separated)
+    {
+      const m = cmd.match(/^replace\s+bullets\s+with\s*:\s*(.+)/i);
+      if (m) {
+        const items = m[1]
+          .split(/[;,]/)
+          .map((s) => s.trim())
+          .filter(Boolean);
+        return applyToDeck((d) => {
+          const s = d.slides[activeIdx];
+          s.bullets = items;
+          s.paragraph = null;
+        });
+      }
+    }
+
+    // Clear bullets
+    if (/^clear\s+bullets$/i.test(cmd)) {
+      return applyToDeck((d) => {
+        d.slides[activeIdx].bullets = [];
+      });
+    }
+
+    // Paragraph content
+    {
+      const m = cmd.match(/^set\s+paragraph\s+(?:of\s+slide\s+(\d+)\s+)?to\s+(.+)/i);
+      if (m) {
+        const idx = m[1] ? clamp(parseInt(m[1], 10) - 1, 0, deck.slides.length - 1) : activeIdx;
+        const text = m[2].trim().replace(/^"(.*)"$/, '$1');
+        return applyToDeck((d) => {
+          const s = d.slides[idx];
+          s.paragraph = text;
+          s.bullets = [];
+        });
+      }
+    }
+
+    // Make quote slide
+    {
+      const m = cmd.match(/^make\s+(?:slide\s+(\d+)\s+)?a\s+quote\s*:\s*(.+)/i);
+      if (m) {
+        const idx = m[1] ? clamp(parseInt(m[1], 10) - 1, 0, deck.slides.length - 1) : activeIdx;
+        const text = m[2].trim().replace(/^"(.*)"$/, '$1');
+        return applyToDeck((d) => {
+          const s = d.slides[idx];
+          s.layout = 'QUOTE';
+          s.quote = text;
+          s.bullets = [];
+          s.paragraph = null;
+        });
+      }
+    }
+
+    // Layout switch
+    {
+      const m = cmd.match(/^set\s+layout\s+(?:of\s+slide\s+(\d+)\s+)?to\s+(two\s*column|paragraph|quote|section\s*header|title\s*and\s*body|title\s*only)/i);
+      if (m) {
+        const idx = m[1] ? clamp(parseInt(m[1], 10) - 1, 0, deck.slides.length - 1) : activeIdx;
+        const key = m[2].toLowerCase().replace(/\s+/g, '_');
+        const map: Record<string, SlideSpec['layout']> = {
+          two_column: 'TWO_COLUMN',
+          paragraph: 'PARAGRAPH',
+          quote: 'QUOTE',
+          section_header: 'SECTION_HEADER',
+          title_and_body: 'TITLE_AND_BODY',
+          title_only: 'TITLE_ONLY',
+        };
+        const layout = map[key] || 'TITLE_AND_BODY';
+        return applyToDeck((d) => {
+          d.slides[idx].layout = layout;
+        });
+      }
+    }
+
+    // Colors: background / text / accent
+    {
+      const m = cmd.match(/^(switch|set)\s+(background|text|accent)\s+(?:color\s+)?to\s+([#a-z0-9]+)$/i);
+      if (m) {
+        const target = m[2].toLowerCase();
+        const hex = normalizeColor(m[3]);
+        if (!hex) return;
+        return applyToDeck((d) => {
+          if (target === 'background') d.theme.backgroundColor = hex;
+          else if (target === 'text') d.theme.textColor = hex;
+          else if (target === 'accent') d.theme.accentColor = hex;
+        });
+      }
+    }
+    if (/^switch\s+background\s+to\s+([#a-z0-9]+)$/i.test(cmd)) {
+      const hex = normalizeColor(cmd.replace(/^switch\s+background\s+to\s+/i, ''));
+      if (hex) {
+        return applyToDeck((d) => {
+          d.theme.backgroundColor = hex;
+        });
+      }
+    }
+
+    // Font sizes
+    {
+      const m = cmd.match(/^(title|body)\s+size\s+(\d{1,3})/i);
+      if (m) {
+        const which = m[1].toLowerCase() as 'title' | 'body';
+        const size = clamp(parseInt(m[2], 10), 8, 96);
+        return applyToDeck((d) => {
+          const s = d.slides[activeIdx];
+          ensureStyle(s, which === 'title' ? 'titleStyle' : 'bodyStyle');
+          (which === 'title' ? s.titleStyle! : s.bodyStyle!).fontSize = size;
+        });
+      }
+    }
+
+    // Alignment
+    {
+      const m = cmd.match(/^align\s+(title|body)\s+(left|right|center|justified)/i);
+      if (m) {
+        const which = m[1].toLowerCase() as 'title' | 'body';
+        const alignWord = m[2].toLowerCase();
+        const map: Record<string, Align> = {
+          left: 'START',
+          right: 'END',
+          center: 'CENTER',
+          justified: 'JUSTIFIED',
+        };
+        return applyToDeck((d) => {
+          const s = d.slides[activeIdx];
+          ensureStyle(s, which === 'title' ? 'titleStyle' : 'bodyStyle');
+          (which === 'title' ? s.titleStyle! : s.bodyStyle!).align = map[alignWord];
+        });
+      }
+    }
+
+    // Bold / italic / underline terms in title/body
+    {
+      const m = cmd.match(/^(make|set)\s+"([^"]+)"\s+(bold|italic|underlined)\s*(in\s+(title|body))?$/i)
+        || cmd.match(/^(make|set)\s+'([^']+)'\s+(bold|italic|underlined)\s*(in\s+(title|body))?$/i)
+        || cmd.match(/^(make|set)\s+(.+?)\s+(bold|italic|underlined)\s*(in\s+(title|body))?$/i);
+      if (m) {
+        const term = (m[2] || '').trim();
+        const style = m[3].toLowerCase(); // bold | italic | underlined
+        const target = (m[5]?.toLowerCase() as 'title' | 'body') || 'body';
+        if (!term) return;
+
+        return applyToDeck((d) => {
+          const s = d.slides[activeIdx];
+          const key = target === 'title' ? 'titleStyle' : 'bodyStyle';
+          ensureStyle(s, key);
+          const arr =
+            style === 'bold'
+              ? s[key]!.bold!
+              : style === 'italic'
+              ? s[key]!.italic!
+              : s[key]!.underline!;
+          if (!arr.includes(term)) arr.push(term);
+        });
+      }
+    }
+
+    // Fallback: if user said “change title to Puppies”
+    {
+      const m = cmd.match(/^change\s+title\s+to\s+(.+)/i);
+      if (m) {
+        const text = m[1].trim().replace(/^"(.*)"$/, '$1');
+        return applyToDeck((d) => {
+          d.slides[activeIdx].title = text;
+        });
+      }
+    }
+  }
 
   return (
-    <div className="mt-4 rounded-xl border border-[#173c32] bg-[#102420] p-3 text-emerald-100">
-      <div className="flex flex-wrap items-center gap-2">
-        <input
-          value={cmd}
-          onChange={(e) => setCmd(e.target.value)}
-          placeholder='Try: “change the title of slide 2 to Puppies”'
-          className="flex-1 rounded-lg border border-[#1f4a40] bg-[#0f1f1b] px-3 py-2 text-emerald-100 placeholder:text-emerald-300/50 focus:outline-none"
-          disabled={disabled || !deck}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              run(cmd);
-              setCmd('');
-            }
-          }}
-        />
+    <div className="mb-3 flex items-center justify-between rounded-xl border border-emerald-700/40 bg-emerald-900/40 px-4 py-3 text-emerald-50">
+      <div className="flex items-center gap-3">
         <button
-          onClick={() => { run(cmd); setCmd(''); }}
-          disabled={disabled || !deck || !cmd.trim()}
-          className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-500 disabled:opacity-50"
+          type="button"
+          onClick={() => (listening ? recognition?.stop() : startListening())}
+          className={`rounded-md px-3 py-1.5 text-sm font-medium ${
+            listening ? 'bg-rose-600 text-white' : 'bg-emerald-600 text-white'
+          }`}
+          title="Voice edit"
         >
-          Run
+          {listening ? 'Listening… (click to stop)' : '🎤 Voice edit'}
         </button>
-        {micSupported && (
-          <button
-            onClick={() => (listening ? stopListening() : startListening())}
-            disabled={disabled || !deck}
-            className={`rounded-lg px-3 py-2 text-sm font-medium ${
-              listening ? 'bg-rose-600 text-white' : 'bg-[#132a24] text-emerald-100 hover:bg-[#163129]'
-            }`}
-            title={listening ? 'Listening… click to stop' : 'Speak a command'}
-          >
-            {listening ? 'Listening…' : '🎤 Speak'}
-          </button>
-        )}
+
+        <button
+          type="button"
+          onClick={undo}
+          className="rounded-md border border-emerald-600/60 px-3 py-1.5 text-sm hover:bg-emerald-800/40"
+        >
+          Undo
+        </button>
+
+        <div className="hidden text-sm md:block">
+          Slide&nbsp;
+          <input
+            type="number"
+            min={1}
+            max={deck.slides.length || 1}
+            value={activeIdx + 1}
+            onChange={(e) =>
+              setActiveIdx(clamp(parseInt(e.target.value || '1', 10) - 1, 0, deck.slides.length - 1))
+            }
+            className="w-16 rounded border border-emerald-700/60 bg-emerald-950/40 px-2 py-1"
+          />
+          &nbsp;/ {deck.slides.length}
+        </div>
       </div>
-      <p className="mt-2 text-xs text-emerald-300/70">
-        Examples: “change the title of slide 2 to Puppies”, “change the layout of slide 4 to two column”,
-        “add bullet to slide 3: New point”, “title size on slide 1 to 42”, “set background color to #0B1B2B”.
-      </p>
+
+      <div className="w-[60%] text-right text-xs text-emerald-200">
+        {lastCommand ? <span>Last: “{lastCommand}”</span> : <span>Try: “switch background to red”, “make 'ATP' bold in body”, “title size 36”, “align body center”, “set layout to two column”, “replace bullets with: A; B; C; D”</span>}
+      </div>
     </div>
   );
 }

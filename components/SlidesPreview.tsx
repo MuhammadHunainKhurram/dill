@@ -79,7 +79,6 @@ function deriveTocItems(allSlides: Slide[]) {
 }
 
 export default function SlidesPreview({ deck }: { deck?: Deck | null }) {
-  // Guard: if no deck or no slides, render a friendly placeholder
   if (!deck || !Array.isArray(deck.slides) || deck.slides.length === 0) {
     return (
       <section className="mt-6">
@@ -92,7 +91,6 @@ export default function SlidesPreview({ deck }: { deck?: Deck | null }) {
 
   const [index, setIndex] = useState(0);
 
-  // Keep index in range when deck changes
   useEffect(() => {
     setIndex(0);
   }, [deck.presentationTitle, deck.slides?.length]);

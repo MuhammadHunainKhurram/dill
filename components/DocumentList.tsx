@@ -1,4 +1,3 @@
-// components/DocumentList.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -7,7 +6,7 @@ type Parsed = {
   id: string;
   original_name: string;
   path: string;
-  content_type: string; // "application/json" | "text/plain"
+  content_type: string;
   page_count: number | null;
   char_count: number | null;
   created_at: string;
@@ -140,7 +139,6 @@ function Preview({ path, contentType }: { path: string; contentType: string }) {
           setSnippet(text.slice(0, 180));
         }
       } catch {
-        // ignore
       }
     };
     run();

@@ -1,0 +1,271 @@
+{
+  "original_name": "Marine Life Notes.pdf",
+  "presentationTitle": "Bioluminescence in Marine Life",
+  "generated_at": "2025-09-14T16:24:28.554Z",
+  "slides": [
+    {
+      "layout": "TITLE_SLIDE",
+      "title": "Bioluminescence in Marine Life",
+      "subtitle": "Illuminating the Depths",
+      "bullets": [],
+      "paragraph": null,
+      "quote": null,
+      "notes": null,
+      "tocItems": null,
+      "citations": null,
+      "titleStyle": {
+        "fontFamily": "Inter",
+        "fontSize": 52,
+        "color": "#FFFFFF",
+        "align": "CENTER",
+        "bold": [],
+        "italic": [],
+        "underline": []
+      },
+      "bodyStyle": {
+        "fontFamily": "Inter",
+        "fontSize": 24,
+        "color": "#FFFFFF",
+        "align": "CENTER",
+        "bold": [],
+        "italic": [],
+        "underline": []
+      }
+    },
+    {
+      "layout": "TITLE_AND_BODY",
+      "title": "Definition",
+      "subtitle": null,
+      "bullets": [
+        "Bioluminescence is the production and emission of light by living organisms.",
+        "It occurs when a chemical reaction inside the organism produces energy in the form of visible light.",
+        "Unlike fluorescence, bioluminescence does not require external light sources."
+      ],
+      "paragraph": null,
+      "quote": null,
+      "notes": null,
+      "tocItems": null,
+      "citations": null,
+      "titleStyle": {
+        "fontFamily": "Inter",
+        "fontSize": 28,
+        "color": "#FFFFFF",
+        "align": "START",
+        "bold": [],
+        "italic": [],
+        "underline": []
+      },
+      "bodyStyle": {
+        "fontFamily": "Inter",
+        "fontSize": 18,
+        "color": "#FFFFFF",
+        "align": "START",
+        "bold": [],
+        "italic": [],
+        "underline": []
+      }
+    },
+    {
+      "layout": "TITLE_AND_BODY",
+      "title": "Key Chemicals",
+      "subtitle": null,
+      "bullets": [
+        "Luciferin: the molecule that produces light when oxidized.",
+        "Luciferase: the enzyme that catalyzes the oxidation of luciferin.",
+        "ATP: energy source for some bioluminescent reactions."
+      ],
+      "paragraph": null,
+      "quote": null,
+      "notes": null,
+      "tocItems": null,
+      "citations": null,
+      "titleStyle": {
+        "fontFamily": "Inter",
+        "fontSize": 28,
+        "color": "#FFFFFF",
+        "align": "START",
+        "bold": [],
+        "italic": [],
+        "underline": []
+      },
+      "bodyStyle": {
+        "fontFamily": "Inter",
+        "fontSize": 18,
+        "color": "#FFFFFF",
+        "align": "START",
+        "bold": [],
+        "italic": [],
+        "underline": []
+      }
+    },
+    {
+      "layout": "TITLE_AND_BODY",
+      "title": "Functions in Marine Life",
+      "subtitle": null,
+      "bullets": [
+        "Camouflage (Counter-illumination): Some organisms, like certain squid, produce light on their bellies to match the faint light from above, making them less visible to predators below.",
+        "Attraction: Anglerfish have bioluminescent lures to attract prey. Similarly, some jellyfish use light to lure small fish.",
+        "Communication: Certain species of marine worms and shrimp use light signals to find mates or coordinate group behaviors.",
+        "Defense: Some squids and small crustaceans release bioluminescent fluids to distract predators, allowing escape."
+      ],
+      "paragraph": null,
+      "quote": null,
+      "notes": null,
+      "tocItems": null,
+      "citations": null,
+      "titleStyle": {
+        "fontFamily": "Inter",
+        "fontSize": 28,
+        "color": "#FFFFFF",
+        "align": "START",
+        "bold": [],
+        "italic": [],
+        "underline": []
+      },
+      "bodyStyle": {
+        "fontFamily": "Inter",
+        "fontSize": 18,
+        "color": "#FFFFFF",
+        "align": "START",
+        "bold": [],
+        "italic": [],
+        "underline": []
+      }
+    },
+    {
+      "layout": "TITLE_AND_BODY",
+      "title": "Examples of Bioluminescent Organisms",
+      "subtitle": null,
+      "bullets": [
+        "Firefly Squid (Watasenia scintillans): Found in Japan, glows blue in large swarms, attracting tourists and predators alike.",
+        "Deep-sea Anglerfish: Uses a luminescent lure to attract prey in the pitch-black deep ocean.",
+        "Dinoflagellates: Microscopic plankton that glow in waves when disturbed, causing \"sea sparkle.\"",
+        "Jellyfish: Many deep-sea species have bioluminescent patterns for communication or defense."
+      ],
+      "paragraph": null,
+      "quote": null,
+      "notes": null,
+      "tocItems": null,
+      "citations": null,
+      "titleStyle": {
+        "fontFamily": "Inter",
+        "fontSize": 28,
+        "color": "#FFFFFF",
+        "align": "START",
+        "bold": [],
+        "italic": [],
+        "underline": []
+      },
+      "bodyStyle": {
+        "fontFamily": "Inter",
+        "fontSize": 18,
+        "color": "#FFFFFF",
+        "align": "START",
+        "bold": [],
+        "italic": [],
+        "underline": []
+      }
+    },
+    {
+      "layout": "TITLE_AND_BODY",
+      "title": "Interesting Facts",
+      "subtitle": null,
+      "bullets": [
+        "Bioluminescence is more common in deep-sea environments than shallow waters because sunlight cannot reach the depths.",
+        "The color of bioluminescent light is typically blue or green because these wavelengths travel farthest in water.",
+        "Some fish can control the intensity and duration of their glow, flashing patterns to signal warnings or confuse predators.",
+        "Scientists are studying bioluminescence for applications in medical imaging, environmental monitoring, and bioengineering."
+      ],
+      "paragraph": null,
+      "quote": null,
+      "notes": null,
+      "tocItems": null,
+      "citations": null,
+      "titleStyle": {
+        "fontFamily": "Inter",
+        "fontSize": 28,
+        "color": "#FFFFFF",
+        "align": "START",
+        "bold": [],
+        "italic": [],
+        "underline": []
+      },
+      "bodyStyle": {
+        "fontFamily": "Inter",
+        "fontSize": 18,
+        "color": "#FFFFFF",
+        "align": "START",
+        "bold": [],
+        "italic": [],
+        "underline": []
+      }
+    },
+    {
+      "layout": "TITLE_AND_BODY",
+      "title": "Summary",
+      "subtitle": null,
+      "bullets": [],
+      "paragraph": "Bioluminescence is a fascinating adaptation that allows marine organisms to survive in the dark, predator-filled depths of the ocean. Its roles range from hiding, hunting, and mating to communicating, making it one of the most versatile and visually stunning biological phenomena on Earth.",
+      "quote": null,
+      "notes": null,
+      "tocItems": null,
+      "citations": null,
+      "titleStyle": {
+        "fontFamily": "Inter",
+        "fontSize": 28,
+        "color": "#FFFFFF",
+        "align": "START",
+        "bold": [],
+        "italic": [],
+        "underline": []
+      },
+      "bodyStyle": {
+        "fontFamily": "Inter",
+        "fontSize": 18,
+        "color": "#FFFFFF",
+        "align": "JUSTIFIED",
+        "bold": [],
+        "italic": [],
+        "underline": []
+      }
+    },
+    {
+      "layout": "CONCLUSION",
+      "title": null,
+      "subtitle": null,
+      "bullets": [],
+      "paragraph": null,
+      "quote": "Bioluminescence is one of the most versatile and visually stunning biological phenomena on Earth.",
+      "notes": null,
+      "tocItems": null,
+      "citations": null,
+      "titleStyle": {
+        "fontFamily": "Garamond",
+        "fontSize": 32,
+        "color": "#FFFFFF",
+        "align": "CENTER",
+        "bold": [],
+        "italic": [
+          "true"
+        ],
+        "underline": []
+      },
+      "bodyStyle": {
+        "fontFamily": "Garamond",
+        "fontSize": 24,
+        "color": "#FFFFFF",
+        "align": "CENTER",
+        "bold": [],
+        "italic": [],
+        "underline": []
+      }
+    }
+  ],
+  "num_slides": 8,
+  "theme": {
+    "backgroundColor": "#111827",
+    "textColor": "#F9FAFB",
+    "accentColor": "#10B981",
+    "backgroundImageUrl": null
+  }
+}

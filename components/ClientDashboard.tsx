@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 
 export default function ClientDashboard() {
-  // If you used "loading" UI before, keep a tiny ready flag
   const [ready, setReady] = useState(true);
   useEffect(() => setReady(true), []);
 
@@ -21,10 +20,6 @@ export default function ClientDashboard() {
       <p className="mt-2 text-sm text-gray-600">
         Auth is removed. Everything below should work without a session.
       </p>
-
-      {/* Your existing UI goes here: uploader, list, etc. */}
-      {/* <UploadForm /> */}
-      {/* <DocumentList /> */}
     </main>
   );
 }

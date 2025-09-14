@@ -5,7 +5,6 @@ import Footer from '@/components/Footer';
 export default function DataAgentPage() {
   return (
     <>
-      {/* Dark pickled background + light typography (same as Education) */}
       <main className="min-h-screen bg-[#0f1f1b] text-emerald-100">
         <div className="mx-auto max-w-7xl px-4 py-10">
           <h1 className="text-3xl font-semibold">Data Agent</h1>
@@ -13,7 +12,6 @@ export default function DataAgentPage() {
             Upload messy CSV/Excel files, let AI clean, analyze, and visualize.
           </p>
 
-          {/* White surface so MessyDataAgent’s gray text is readable */}
           <section className="mt-6 rounded-2xl border border-[#e3efe9] bg-white p-2 text-[#0f1f1b] shadow-sm">
             <MessyDataAgent />
           </section>
