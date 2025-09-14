@@ -1,17 +1,14 @@
-// app/page.tsx
 import Link from "next/link";
 
 export default function Home() {
   return (
     <main className="relative">
-      {/* Soft radial glow background */}
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute -top-32 left-1/2 h-[36rem] w-[36rem] -translate-x-1/2 rounded-full bg-emerald-400/10 blur-3xl" />
         <div className="absolute bottom-0 right-0 h-56 w-56 rounded-full bg-teal-400/10 blur-2xl" />
       </div>
 
       <div className="mx-auto w-full max-w-6xl px-4 py-16 sm:py-20">
-        {/* Heading */}
         <div className="mb-10 text-center sm:mb-14">
           <h1 className="text-3xl font-semibold tracking-tight sm:text-5xl">
             <span className="bg-gradient-to-b from-emerald-200 via-emerald-100 to-emerald-400/70 bg-clip-text text-transparent">
@@ -23,9 +20,7 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Cards */}
         <div className="grid gap-6 md:grid-cols-2">
-          {/* Education */}
           <section
             className="
               group relative overflow-hidden rounded-2xl border
@@ -34,7 +29,6 @@ export default function Home() {
               transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_0_1px_rgba(16,185,129,0.18),0_26px_80px_-24px_rgba(0,0,0,0.6)]
             "
           >
-            {/* subtle gradient edge */}
             <div className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-emerald-400/40 to-transparent" />
 
             <div className="p-6 sm:p-8">
@@ -74,7 +68,6 @@ export default function Home() {
             </div>
           </section>
 
-          {/* Business */}
           <section
             className="
               group relative overflow-hidden rounded-2xl border
@@ -99,7 +92,7 @@ export default function Home() {
 
               <div className="mt-6">
                 <Link
-                  href="/business"
+                  href="/data-agent"
                   className="
                     inline-flex items-center gap-2 rounded-lg
                     bg-emerald-500 px-4 py-2 text-sm font-medium text-emerald-950
@@ -123,7 +116,6 @@ export default function Home() {
           </section>
         </div>
 
-        {/* Footer microcopy */}
         <div className="mt-14 flex items-center justify-between text-[13px] text-[#77a293]">
           <span>© {new Date().getFullYear()} Dill</span>
           <span className="opacity-80">Built with Next.js</span>

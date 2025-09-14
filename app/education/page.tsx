@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import SlidesPreview from "@/components/SlidesPreview";
+import VoiceCommander from '@/components/VoiceCommander';
+
 
 type ApiResult = {
   ok: boolean;
@@ -146,7 +148,6 @@ export default function EducationPage() {
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-10">
-      {/* Header with auth in top-right */}
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-semibold">Education</h1>
@@ -204,14 +205,14 @@ export default function EducationPage() {
 
         <div className="grid gap-4 sm:grid-cols-3">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Number of slides</label>
+            <label className="block text-sm font-medium text-black">Number of slides</label>
             <input
               type="number"
               min={3}
               max={30}
               value={numSlides}
               onChange={(e) => setNumSlides(parseInt(e.target.value || "0", 10))}
-              className="mt-2 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+              className="mt-2 w-full rounded-md border border-black text-black px-3 py-2 text-sm"
             />
           </div>
 
@@ -221,7 +222,7 @@ export default function EducationPage() {
             <select
               value={theme}
               onChange={(e) => setTheme(e.target.value)}
-              className="mt-2 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+              className="mt-2 w-full rounded-md border border-black text-black px-3 py-2 text-sm"
             >
               <option>Material</option>
               <option>Simple</option>
@@ -253,7 +254,7 @@ export default function EducationPage() {
             <button
               type="button"
               onClick={() => setShowJson((v) => !v)}
-              className="rounded border px-3 py-2 text-sm"
+              className="rounded border px-3 py-2 text-sm text-black"
             >
               {showJson ? "Hide JSON" : "Show JSON"}
             </button>
@@ -268,15 +269,37 @@ export default function EducationPage() {
       </form>
 
       {/* Visual preview */}
-      {result?.slides?.length ? (
-  <SlidesPreview
-    deck={{
-      presentationTitle: result.presentationTitle || 'Untitled',
-      slides: result.slides,
-      theme: result.theme || {},
-    }}
-  />
+      {/* Visual preview + voice commander */}
+{result?.slides?.length ? (
+  <>
+    <VoiceCommander
+      deck={{
+        presentationTitle: result.presentationTitle || 'Untitled',
+        slidesCount: result.slides?.length || 0,
+        theme: result.theme || {},
+        slides: result.slides,
+      }}
+      // Keep your existing `result` shape in sync with edits
+      setDeck={(d) =>
+        setResult((prev: any) => ({
+          ...(prev || {}),
+          presentationTitle: d.presentationTitle,
+          slides: d.slides,
+          theme: d.theme,
+        }))
+      }
+    />
+
+    <SlidesPreview
+      deck={{
+        presentationTitle: result.presentationTitle || 'Untitled',
+        slides: result.slides,
+        theme: result.theme || {},
+      }}
+    />
+  </>
 ) : null}
+
 
 
       {/* JSON view */}

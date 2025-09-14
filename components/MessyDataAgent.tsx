@@ -298,7 +298,6 @@ export default function MessyDataAgent() {
 
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
-      {/* Breadcrumb Navigation */}
       <nav className="flex items-center space-x-2 text-sm text-gray-500 mb-4">
         <Link href="/" className="hover:text-gray-700">
           Dashboard
@@ -314,7 +313,6 @@ export default function MessyDataAgent() {
         <p className="text-gray-600">Upload messy CSV/Excel files and let AI clean and analyze your data</p>
       </div>
 
-      {/* File Upload Area */}
       <div className="bg-white rounded-lg shadow-md p-6">
         <div
           {...getRootProps()}
@@ -370,7 +368,6 @@ export default function MessyDataAgent() {
         )}
       </div>
 
-      {/* Error Display */}
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
           <div className="flex">
@@ -385,10 +382,8 @@ export default function MessyDataAgent() {
         </div>
       )}
 
-      {/* Results Display */}
       {results && (
         <div className="space-y-6">
-          {/* Dataset Overview */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Dataset Overview</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -413,7 +408,6 @@ export default function MessyDataAgent() {
             </div>
           </div>
 
-          {/* Cleaning Notes */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Data Cleaning Analysis</h2>
             <div className="space-y-4">
@@ -435,7 +429,6 @@ export default function MessyDataAgent() {
             </div>
           </div>
 
-          {/* Validation Report */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Validation Report</h2>
             <div className="space-y-2">
@@ -459,7 +452,6 @@ export default function MessyDataAgent() {
             </div>
           </div>
 
-          {/* Insights */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Key Insights</h2>
             <ul className="space-y-2">
@@ -474,7 +466,6 @@ export default function MessyDataAgent() {
             </ul>
           </div>
 
-          {/* Charts */}
           {results.analysis.plots.length > 0 && (
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">Data Visualizations</h2>
@@ -491,7 +482,6 @@ export default function MessyDataAgent() {
             </div>
           )}
 
-          {/* Download Section */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Export Results</h2>
             <div className="flex space-x-4">

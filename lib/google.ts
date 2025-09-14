@@ -1,4 +1,3 @@
-// lib/google.ts
 import { google } from "googleapis";
 import { cookies } from "next/headers";
 
@@ -30,7 +29,6 @@ export function getAuthUrl(state?: string) {
       .split(/\s+/)
       .filter(Boolean);
 
-  // offline + consent: allows issuing a refresh_token (first consent per user+client)
   return client.generateAuthUrl({
     access_type: "offline",
     prompt: "consent",
@@ -45,13 +43,12 @@ export async function setTokensFromCode(code: string) {
   const jar = cookies();
 
   if (tokens.access_token) {
-    jar.set("g_at", tokens.access_token, cookieOpts(60 * 60)); // ~1h
+    jar.set("g_at", tokens.access_token, cookieOpts(60 * 60));
   }
   if (tokens.refresh_token) {
-    jar.set("g_rt", tokens.refresh_token, cookieOpts(60 * 60 * 24 * 30)); // 30 days
+    jar.set("g_rt", tokens.refresh_token, cookieOpts(60 * 60 * 24 * 30));
   }
   if (tokens.expiry_date) {
-    // store as epoch ms
     jar.set("g_exp", String(tokens.expiry_date), cookieOpts(60 * 60 * 24 * 30));
   }
 }
@@ -65,11 +62,6 @@ function readTokenCookies() {
   return { access, refresh, expiry };
 }
 
-/**
- * Returns a google client set up with any tokens we have.
- * - If access token looks expired AND no refresh token is present -> throws {code:'NEED_AUTH'}
- * - If refresh token exists, we'll try to refresh and update the cookie (but never crash if it fails)
- */
 export async function getAuthorizedGoogle() {
   const { access, refresh, expiry } = readTokenCookies();
   const client = getOAuthClient();
@@ -80,20 +72,16 @@ export async function getAuthorizedGoogle() {
     expiry_date: expiry || undefined,
   });
 
-  // If we have a refresh token, let the library refresh silently if needed.
   if (refresh) {
     try {
-      const t = await client.getAccessToken(); // may refresh
+      const t = await client.getAccessToken();
       if (t?.token) {
         cookies().set("g_at", t.token, cookieOpts(60 * 60));
-        // we don't get a new expiry here reliably; ignore and rely on retries
       }
     } catch (err) {
-      // don't throw; we can still attempt the call and return a nice error if it fails
       console.warn("Google token refresh failed:", (err as any)?.message);
     }
   } else {
-    // No refresh token. If we look expired (now >= expiry - 30s), require re-auth.
     const now = Date.now();
     if (expiry && now >= expiry - 30_000) {
       const e: any = new Error("Google auth required");

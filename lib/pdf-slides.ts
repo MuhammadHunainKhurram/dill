@@ -1,4 +1,3 @@
-// lib/pdf-slides.ts
 import { Anthropic, APIError } from "@anthropic-ai/sdk";
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
@@ -84,18 +83,17 @@ FORMATTING & LAYOUT GUIDELINES (you choose intelligently):
 `.trim();
 
 
-/** ----- Types ----- */
 
 export type Align = "START" | "CENTER" | "END" | "JUSTIFIED";
 
 export interface TextStyleSpec {
-  fontFamily?: string | null;  // Inter, Arial, Georgia, "Times New Roman", "Comic Sans MS", etc.
-  fontSize?: number | null;    // pt
-  color?: string | null;       // "#RRGGBB"
+  fontFamily?: string | null;
+  fontSize?: number | null;
+  color?: string | null;
   align?: Align;
-  bold?: string[];             // substrings to bold
-  italic?: string[];           // substrings to italicize
-  underline?: string[];        // substrings to underline
+  bold?: string[];
+  italic?: string[];
+  underline?: string[];
 }
 
 export interface SlideSpec {
@@ -123,11 +121,8 @@ export interface SlideSpec {
   quote?: string | null;
   notes?: string | null;
 
-  // TABLE_OF_CONTENTS
   tocItems?: string[] | null;
-
-  // APPENDIX
-  citations?: string[] | null; // MLA9 strings
+  citations?: string[] | null;
 
   titleStyle?: TextStyleSpec;
   bodyStyle?: TextStyleSpec;
@@ -151,7 +146,6 @@ export interface SlideGenerationResponse {
   error?: string;
 }
 
-/** ----- Model plumbing ----- */
 
 const MODEL_CANDIDATES: string[] = (
   process.env.ANTHROPIC_MODEL
@@ -198,7 +192,7 @@ async function callClaudeJSON(prompt: string) {
       });
       return res;
     } catch (e: any) {
-      const msg = e?.message || (e as APIError)?.error?.message || String(e);
+      const msg = e?.message || String(e);
       errors[model] = msg;
       continue;
     }

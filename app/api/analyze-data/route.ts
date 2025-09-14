@@ -295,20 +295,18 @@ function getFallbackAnalysis(metadata: DatasetMetadata): AnalysisResult {
     cleaning_notes: cleaningNotes,
     validation_report: validationReport,
     insights,
-    plots: plots.slice(0, 2) // Limit to 2 charts
+    plots: plots.slice(0, 2)
   };
 }
 
 export async function POST(req: Request) {
   try {
-    // Parse form data
     const form = await req.formData();
     const files = form.getAll("files") as File[];
     if (!files || files.length === 0) {
       return NextResponse.json({ ok: false, error: "No files provided" }, { status: 400 });
     }
 
-    // Process all uploaded files
     const datasets: any[] = [];
     const fileNames: string[] = [];
 
@@ -323,7 +321,6 @@ export async function POST(req: Request) {
       const buffer = Buffer.from(await file.arrayBuffer());
       const content = buffer.toString('utf-8');
 
-      // Parse CSV data
       const parseResult = Papa.parse(content, {
         header: true,
         skipEmptyLines: true,
@@ -338,20 +335,13 @@ export async function POST(req: Request) {
       fileNames.push(file.name);
     }
 
-    // Merge datasets if multiple files
     let combinedData = datasets[0];
     if (datasets.length > 1) {
-      // Simple merge - combine all rows
       combinedData = datasets.flat();
     }
 
-    // Analyze the dataset
     const metadata = analyzeDataset(combinedData);
-    
-    // Get AI analysis
     const analysis = await analyzeWithClaude(metadata);
-
-    // Analysis completed successfully
     let storagePath: string | null = null;
 
     return NextResponse.json({
@@ -359,7 +349,7 @@ export async function POST(req: Request) {
       metadata,
       analysis,
       storagePath,
-      dataPreview: combinedData.slice(0, 10) // Return first 10 rows for preview
+      dataPreview: combinedData.slice(0, 10)
     });
 
   } catch (error: any) {

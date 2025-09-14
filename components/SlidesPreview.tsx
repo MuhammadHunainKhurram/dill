@@ -330,7 +330,6 @@ function renderSlide(slide: Slide, deck: Deck, accent: string, defaultText: stri
     );
   }
 
-  // DEFAULT: TITLE + bullets or paragraph
   return (
     <div>
       {title ? (
