@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { createServerSupabase } from "@/lib/supabase-server";
+import { createServerSupabaseReadOnly } from "@/lib/supabase-server";
 
 export async function GET(request: Request) {
-  const supabase = createServerSupabase();
+  const supabase = createServerSupabaseReadOnly();
   const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
 

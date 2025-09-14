@@ -1,11 +1,11 @@
-import { createServerSupabase } from "@/lib/supabase-server";
+import { createServerSupabaseReadOnly } from "@/lib/supabase-server";
 import SiteHeader from "@/components/SiteHeader";
 import Hero from "@/components/Hero";
 import ClientDashboard from "@/components/ClientDashboard";
 
 export default async function HomePage() {
   // optional: server-side fetch (mostly for SSR consistency)
-  const supabase = createServerSupabase();
+  const supabase = createServerSupabaseReadOnly();
   await supabase.auth.getSession();
 
   return (
