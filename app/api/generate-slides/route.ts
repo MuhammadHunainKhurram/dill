@@ -22,36 +22,6 @@ function getServerSupabase() {
   );
 }
 
-// Extract plain text from a PDF using a simpler approach
-async function extractTextFromPdf(u8: Uint8Array) {
-  try {
-    const buffer = Buffer.from(u8);
-    
-    // Validate buffer
-    if (!buffer || buffer.length === 0) {
-      throw new Error('Invalid PDF buffer');
-    }
-    
-    // Check for PDF header
-    const header = buffer.slice(0, 4).toString();
-    if (header !== '%PDF') {
-      throw new Error('Invalid PDF file format');
-    }
-    
-    // For now, return basic metadata - we'll focus on slide generation
-    // This avoids the pdf-parse library issues entirely
-    return { 
-      text: 'PDF content extracted successfully. Use slide generation for AI-powered content extraction.',
-      numPages: 1,
-      title: 'Uploaded PDF Document'
-    };
-  } catch (error) {
-    console.error('PDF parsing error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown PDF parsing error';
-    throw new Error(`Failed to parse PDF: ${errorMessage}`);
-  }
-}
-
 export async function POST(req: Request) {
   try {
     const supabase = getServerSupabase();
@@ -75,7 +45,8 @@ export async function POST(req: Request) {
     if (!user) return NextResponse.json({ ok: false, error: "Not authenticated" }, { status: 401 });
 
     const file = form.get("file") as File | null;
-    const saveAs = ((form.get("saveAs") as string) || "json") as "json" | "txt";
+    const numSlides = parseInt((form.get("numSlides") as string) || "5");
+    
     if (!file) return NextResponse.json({ ok: false, error: "file is required" }, { status: 400 });
     if (file.type !== "application/pdf") {
       return NextResponse.json({ ok: false, error: "only PDF accepted" }, { status: 400 });
@@ -83,43 +54,32 @@ export async function POST(req: Request) {
 
     // Read bytes from uploaded File
     const ab = await file.arrayBuffer();
-    const u8 = new Uint8Array(ab);
-
-    // Generate slides using Claude instead of basic text extraction
     const pdfBuffer = Buffer.from(ab);
-    const slideResult = await generateSlidesFromPDF(pdfBuffer, 5, file.name);
+
+    // Generate slides using Anthropic
+    const slideResult = await generateSlidesFromPDF(pdfBuffer, numSlides, file.name);
     
     if (!slideResult.success) {
-      throw new Error(`Slide generation failed: ${slideResult.error}`);
+      return NextResponse.json({ ok: false, error: slideResult.error }, { status: 500 });
     }
 
-    // Build output
+    // Build output for storage
     const now = Date.now();
-    const safeName = file.name.replace(/\s+/g, "_");
-    const ext = saveAs === "txt" ? "txt" : "json";
-    const storagePath = `${user.id}/${now}_${safeName}.${ext}`;
+    const safeName = file.name.replace(/\s+/g, "_").replace(/\.pdf$/i, "");
+    const storagePath = `${user.id}/${now}_${safeName}_slides.json`;
 
-    let blob: Blob;
-    let contentType: string;
-    if (saveAs === "txt") {
-      blob = new Blob([slideResult.slides || ''], { type: "text/plain" });
-      contentType = "text/plain";
-    } else {
-      const json = {
-        original_name: file.name,
-        title: "AI-Generated Slides",
-        slide_count: 5,
-        generated_at: new Date().toISOString(),
-        char_count: slideResult.slides?.length || 0,
-        slides: slideResult.slides,
-      };
-      blob = new Blob([JSON.stringify(json, null, 2)], { type: "application/json" });
-      contentType = "application/json";
-    }
+    const slideData = {
+      original_name: file.name,
+      num_slides: numSlides,
+      generated_at: new Date().toISOString(),
+      slides: slideResult.slides,
+    };
+
+    const blob = new Blob([JSON.stringify(slideData, null, 2)], { type: "application/json" });
 
     // Upload to storage
     const up = await supabase.storage.from("parsed").upload(storagePath, blob, {
-      contentType,
+      contentType: "application/json",
       upsert: false,
     });
     if (up.error) throw up.error;
@@ -129,19 +89,25 @@ export async function POST(req: Request) {
       .from("parsed_documents")
       .insert({
         user_id: user.id,
-        original_name: file.name,
+        original_name: `${file.name} (${numSlides} slides)`,
         path: storagePath,
-        content_type: contentType,
-        page_count: 5,
+        content_type: "application/json",
+        page_count: numSlides,
         char_count: slideResult.slides?.length || 0,
       })
       .select("id")
       .single();
     if (ins.error) throw ins.error;
 
-    return NextResponse.json({ ok: true, id: ins.data.id, path: storagePath, contentType });
+    return NextResponse.json({ 
+      ok: true, 
+      id: ins.data.id, 
+      path: storagePath, 
+      slides: slideResult.slides,
+      numSlides 
+    });
   } catch (err: any) {
-    console.error("INGEST_ERROR", err);
+    console.error("SLIDE_GENERATION_ERROR", err);
     return NextResponse.json({ ok: false, error: err?.message ?? "Unknown server error" }, { status: 500 });
   }
 }

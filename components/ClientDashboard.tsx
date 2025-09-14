@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createBrowserClient } from "@/lib/supabase-browser";
 import UploadPdf from "@/components/UploadPdf";
+import SlideGenerator from "@/components/SlideGenerator";
 import DocumentList from "@/components/DocumentList";
 
 export default function ClientDashboard() {
@@ -53,8 +54,9 @@ export default function ClientDashboard() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1 space-y-6">
           <UploadPdf />
+          <SlideGenerator />
         </div>
         <div className="lg:col-span-2">
           <div className="mb-3 flex items-center justify-between">
